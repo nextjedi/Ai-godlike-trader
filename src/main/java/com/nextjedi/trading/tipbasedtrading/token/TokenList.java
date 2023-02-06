@@ -6,6 +6,7 @@ import com.zerodhatech.models.Instrument;
 import com.zerodhatech.models.User;
 import com.zerodhatech.ticker.KiteTicker;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -15,8 +16,9 @@ import java.util.stream.Collectors;
 
 
 @RestController
+@RequestMapping("token")
 public class TokenList {
-    @GetMapping(path="/token")
+    @GetMapping
     public String getTokens() throws IOException, KiteException {
         String apikey = "2himf7a1ff5edpjy";
         String apiSecret = "n3u0lp8xjwqwkhf3ljvmrwhr1o8b9f2k";
