@@ -2,9 +2,13 @@ package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
+import com.zerodhatech.kiteconnect.KiteConnect;
+import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
+import com.zerodhatech.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -12,11 +16,27 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
-    public void insert(TokenAccess token){
-        tokenRepository.save(token);
+    public void insert(String requestToken){
+        TokenAccess token = new TokenAccess();
+        String apikey = "2himf7a1ff5edpjy";
+        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
+        KiteConnect kiteSdk = new KiteConnect(apikey);
+        try {
+            User user =kiteSdk.generateSession(requestToken,apiSecret);
+            token.setPublicToken(user.publicToken);
+            token.setAccesstoken(user.accessToken);
+            tokenRepository.deleteAll();
+            tokenRepository.save(token);
+        } catch (KiteException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
-    public List<TokenAccess> getToken(){
-        return tokenRepository.findAll();
+    public TokenAccess getToken(){
+        List<TokenAccess> tokens =tokenRepository.findAll();
+        return tokens.get(0);
     }
 }

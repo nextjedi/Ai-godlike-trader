@@ -14,11 +14,11 @@ public class TokenController {
     private TokenService tokenService;
 
     @PostMapping
-    public void insertToken(@RequestBody TokenAccess tokenAccess){
-        tokenService.insert(tokenAccess);
+    public void insertToken(@RequestBody String RequestToken){
+        tokenService.insert(RequestToken);
     }
     @GetMapping
-    public List<TokenAccess> getTokens(){
+    public TokenAccess getTokens(){
         return tokenService.getToken();
     }
 }

@@ -16,14 +16,14 @@ public class TokenAccess {
 
     private String publicToken;
     private String accesstoken;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+//todo: add date for token and get only the latest token
+//    @CreatedDate
+//    @Column(name = "created_at", nullable = false, updatable = false)
+//    private Date createdAt;
+//
+//    @LastModifiedDate
+//    @Column(name = "updated_at")
+//    private LocalDateTime updatedAt;
     public Long getId() {
         return id;
     }
