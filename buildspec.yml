@@ -3,10 +3,10 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: corretto17
+      java: latest
   build:
     commands:
-      - mvn clean install
+      - mvn clean install -x
   post_build:
     commands:
       - echo Build completed
