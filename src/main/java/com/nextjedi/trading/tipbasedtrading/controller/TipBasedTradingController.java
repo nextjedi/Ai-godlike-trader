@@ -23,7 +23,7 @@ public class TipBasedTradingController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (KiteException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.message);
         }
     }
 
