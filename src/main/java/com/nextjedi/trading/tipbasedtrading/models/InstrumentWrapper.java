@@ -1,6 +1,5 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
-import com.zerodhatech.models.Instrument;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -10,15 +9,16 @@ public class InstrumentWrapper {
     @Id
     public long instrument_token;
     public long exchange_token;
-    public String tradingsymbol;
+    public String tradingSymbol;
     public String name;
     public double last_price;
     public double tick_size;
-    public String instrument_type;
+    public String instrumentType;
     public String segment;
     public String exchange;
-    public String strike;
+    public int strike;
     public int lot_size;
+    @Temporal(TemporalType.DATE)
     public Date expiry;
 
     public InstrumentWrapper() {
@@ -27,14 +27,14 @@ public class InstrumentWrapper {
     public InstrumentWrapper(com.zerodhatech.models.Instrument instrument) {
         instrument_token = instrument.getInstrument_token();
         exchange_token = instrument.getExchange_token();
-        tradingsymbol = instrument.getTradingsymbol();
+        tradingSymbol = instrument.getTradingsymbol();
         name = instrument.getName();
         last_price = instrument.getLast_price();
         tick_size = instrument.getTick_size();
-        instrument_type = instrument.getInstrument_type();
+        instrumentType = instrument.getInstrument_type();
         segment = instrument.getSegment();
         exchange = instrument.getExchange();
-        strike = instrument.getStrike();
+        strike = Integer.parseInt(instrument.getStrike());
         lot_size = instrument.getLot_size();
         expiry = instrument.getExpiry();
     }
@@ -62,12 +62,12 @@ public class InstrumentWrapper {
         this.name = name;
     }
 
-    public String getTradingsymbol() {
-        return this.tradingsymbol;
+    public String getTradingSymbol() {
+        return this.tradingSymbol;
     }
 
-    public void setTradingsymbol(String tradingsymbol) {
-        this.tradingsymbol = tradingsymbol;
+    public void setTradingSymbol(String tradingSymbol) {
+        this.tradingSymbol = tradingSymbol;
     }
 
     public double getLast_price() {
@@ -94,12 +94,12 @@ public class InstrumentWrapper {
         this.expiry = expiry;
     }
 
-    public String getInstrument_type() {
-        return this.instrument_type;
+    public String getInstrumentType() {
+        return this.instrumentType;
     }
 
-    public void setInstrument_type(String instrument_type) {
-        this.instrument_type = instrument_type;
+    public void setInstrumentType(String instrumentType) {
+        this.instrumentType = instrumentType;
     }
 
     public String getSegment() {
@@ -118,11 +118,11 @@ public class InstrumentWrapper {
         this.exchange = exchange;
     }
 
-    public String getStrike() {
+    public int getStrike() {
         return this.strike;
     }
 
-    public void setStrike(String strike) {
+    public void setStrike(int strike) {
         this.strike = strike;
     }
 

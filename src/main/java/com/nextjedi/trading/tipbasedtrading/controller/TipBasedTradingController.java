@@ -16,15 +16,8 @@ public class TipBasedTradingController {
     TipBasedTradingService tipBasedTradingService;
 
     @PostMapping
-    public void trade(TipModel tipModel){
-
-        try {
-            tipBasedTradingService.tipBasedTrading(tipModel);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (KiteException e) {
-            System.out.println(e.message);
-        }
+    public void trade(@RequestBody TipModel tipModel){
+        tipBasedTradingService.trade(tipModel);
     }
 
 }

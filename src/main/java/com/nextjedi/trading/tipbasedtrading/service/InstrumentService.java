@@ -1,16 +1,20 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
+import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.Instrument;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +41,8 @@ public class InstrumentService {
         try {
             ArrayList<Instrument> instruments = (ArrayList<Instrument>) kiteSdk.getInstruments();
             List<InstrumentWrapper> instrumentWrappers
-                =instruments.stream().filter(instrument -> instrument.getName() !=null && (instrument.getName().equals("FINNIFTY") ||instrument.getName().equals("BANKNIFTY")))
+                =instruments.stream()
+                    .filter(instrument -> instrument.getName() !=null && (instrument.getName().equals("FINNIFTY") ||instrument.getName().equals("BANKNIFTY")))
                     .map(instrument -> new InstrumentWrapper(instrument)).collect(Collectors.toList());
             instrumentRepository.deleteAll();
             instrumentRepository.saveAll(instrumentWrappers);
@@ -49,7 +54,8 @@ public class InstrumentService {
         }
     }
 
-    public InstrumentWrapper findInstrument(String instrument){
-        return instrumentRepository.findByTradingsymbol(instrument);
+    public InstrumentWrapper findInstrument(InstrumentQuery instrumentQuery){
+        return instrumentRepository.findByStrikeAndNameAndInstrumentTypeAndSegmentAndExpiry(
+                instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(),"NFO-OPT", instrumentQuery.getExpiry());
     }
 }

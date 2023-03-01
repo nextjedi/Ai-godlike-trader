@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.controller;
 
+import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.service.InstrumentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class InstrumentController {
     }
 
     @GetMapping
-    public InstrumentWrapper searchInstrument(String instrument){
-        return instrumentService.findInstrument(instrument);
+    public InstrumentWrapper searchInstrument(InstrumentQuery instrumentQuery){
+        return instrumentService.findInstrument(instrumentQuery);
     }
 }

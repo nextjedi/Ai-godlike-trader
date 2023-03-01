@@ -1,14 +1,14 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
 public class TipModel {
-    private String instrument;
+    private InstrumentQuery instrument;
     private int price;
 
-    public String getInstrument() {
+    public InstrumentQuery getInstrument() {
         return instrument;
     }
 
-    public void setInstrument(String instrument) {
+    public void setInstrument(InstrumentQuery instrument) {
         this.instrument = instrument;
     }
 
