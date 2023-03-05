@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: corretto19.02
+      java: corretto17
   build:
     commands:
       - mvn clean install -X
