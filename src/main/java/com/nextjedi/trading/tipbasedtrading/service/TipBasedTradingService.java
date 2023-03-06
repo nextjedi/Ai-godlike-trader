@@ -84,7 +84,7 @@ public class TipBasedTradingService {
         tokens.add((instr.getInstrument_token()));
         Map<String, Quote> quoteMap = kiteSdk.getQuote(new String[]{String.valueOf(instr.getInstrument_token())});
         Quote quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
-        int balance = Integer.parseInt(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
+        float balance = Float.parseFloat(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
 
 //        todo: if balance is available
         if(balance < quote.lastPrice* instr.getLot_size()){
