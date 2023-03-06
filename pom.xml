@@ -8,7 +8,7 @@
 		<version>3.0.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<groupId>com.nextjedi.trading</groupId>
 	<artifactId>tip-based-trading</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
