@@ -10,6 +10,7 @@ phases:
   post_build:
     commands:
       - echo Build completed
+      - mvn package
 artifacts:
   files:
     - target/*.jar
