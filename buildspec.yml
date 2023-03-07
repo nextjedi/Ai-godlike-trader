@@ -12,7 +12,7 @@ phases:
       - echo Build completed
 artifacts:
   files:
-    - target/*.war
+    - target/*.jar
     - scripts/*.sh
     - appspec.yml
   discard-paths: yes

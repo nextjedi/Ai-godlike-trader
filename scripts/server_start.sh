@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 cd /home/ec2-user/server
-sudo /usr/bin/java -war -Dserver.port=80 \
-    *.war > /dev/null 2> /dev/null < /dev/null &
+sudo java -jar -Dserver.port=8080 \
+    *.jar > /dev/null 2> /dev/null < /dev/null &
