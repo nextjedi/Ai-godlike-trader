@@ -18,4 +18,3 @@ artifacts:
     - tip-based-trading-0.0.1-SNAPSHOT.war
     - scripts
     - appspec.yml
-  discard-paths: yes
