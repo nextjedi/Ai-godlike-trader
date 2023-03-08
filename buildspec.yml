@@ -6,14 +6,16 @@ phases:
       java: corretto17
   build:
     commands:
-      - mvn clean install -X
+      - mvn clean install
   post_build:
     commands:
       - echo Build completed
       - mvn package
+      - mv target/tip-based-trading-0.0.1-SNAPSHOT.war tip-based-trading-0.0.1-SNAPSHOT.war
+      - echo war moved
 artifacts:
   files:
-    - target
+    - tip-based-trading-0.0.1-SNAPSHOT.war
     - scripts
     - appspec.yml
   discard-paths: yes
