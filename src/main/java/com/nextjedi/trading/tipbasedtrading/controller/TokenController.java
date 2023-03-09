@@ -20,6 +20,7 @@ public class TokenController {
 
     @PostMapping
     public void insertToken(@RequestBody String RequestToken){
+        logger.info("Inside the post token controller");
         tokenService.insert(RequestToken);
     }
     @GetMapping
