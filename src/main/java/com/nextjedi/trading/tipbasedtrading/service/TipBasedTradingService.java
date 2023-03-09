@@ -31,7 +31,7 @@ public class TipBasedTradingService {
     final long threeSeconds = 3 * 1000;
     final long delay = 0;
 
-    Logger logger = LoggerFactory.getLogger(TokenController.class);
+    Logger logger = LoggerFactory.getLogger(TipBasedTradingService.class);
 //    actually execute trade
     @Autowired
     private InstrumentService instrumentService;
@@ -90,7 +90,7 @@ public class TipBasedTradingService {
         logger.info("instrument" +tipModel.getInstrument().toString() );
         KiteConnect kiteSdk = connectToKite();
         KiteTicker tickerProvider = new KiteTicker(kiteSdk.getAccessToken(), kiteSdk.getApiKey());
-        InstrumentWrapper instr = instrumentService.findInstrument(tipModel.getInstrument());
+        InstrumentWrapper instr = instrumentService.findInstrumentWithEarliestExpiry(tipModel.getInstrument());
         ArrayList<Long> tokens = new ArrayList<>();
         tokens.add((instr.getInstrument_token()));
         Map<String, Quote> quoteMap = kiteSdk.getQuote(new String[]{String.valueOf(instr.getInstrument_token())});

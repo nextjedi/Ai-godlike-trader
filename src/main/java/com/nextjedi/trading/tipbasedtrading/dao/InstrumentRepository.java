@@ -10,6 +10,5 @@ public interface InstrumentRepository extends JpaRepository<InstrumentWrapper,Lo
 
     public InstrumentWrapper findByTradingSymbol(String tradingsymbol);
     public InstrumentWrapper findByStrikeAndNameAndInstrumentTypeAndSegmentAndExpiry(int Strike, String name,String instrumentType,String Segment, Date expiry);
-    public List<InstrumentWrapper> findByStrikeAndNameAndInstrumentType(int Strike, String name,String instrumentType);
-    public List<InstrumentWrapper> findByExpiry(Date expiry);
+    public List<InstrumentWrapper> findByStrikeAndNameAndInstrumentTypeAndSegment(int Strike, String name,String instrumentType, String Segment);
 }

@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
@@ -8,19 +9,19 @@ import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.Instrument;
 import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class InstrumentService {
 
+    Logger logger = LoggerFactory.getLogger(InstrumentService.class);
     @Autowired
     private TokenService tokenService;
 
@@ -54,8 +55,11 @@ public class InstrumentService {
         }
     }
 
-    public InstrumentWrapper findInstrument(InstrumentQuery instrumentQuery){
-        return instrumentRepository.findByStrikeAndNameAndInstrumentTypeAndSegmentAndExpiry(
-                instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(),"NFO-OPT", instrumentQuery.getExpiry());
+    public InstrumentWrapper findInstrumentWithEarliestExpiry(InstrumentQuery instrumentQuery){
+        List<InstrumentWrapper> instruments = instrumentRepository.findByStrikeAndNameAndInstrumentTypeAndSegment(
+                instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), "NFO-OPT");
+        logger.info("number of instrument "+instruments.size());
+        Collections.sort(instruments, Comparator.comparing(InstrumentWrapper::getExpiry));
+        return instruments.get(0);
     }
 }

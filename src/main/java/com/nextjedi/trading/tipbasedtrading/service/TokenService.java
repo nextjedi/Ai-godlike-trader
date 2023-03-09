@@ -1,10 +1,13 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import java.util.List;
 
 @Service
 public class TokenService {
+    Logger logger = LoggerFactory.getLogger(TokenService.class);
     @Autowired
     private TokenRepository tokenRepository;
 

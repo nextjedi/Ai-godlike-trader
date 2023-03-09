@@ -28,6 +28,6 @@ public class InstrumentController {
     @GetMapping
     public InstrumentWrapper searchInstrument(InstrumentQuery instrumentQuery){
         logger.info("Search instrument Controller");
-        return instrumentService.findInstrument(instrumentQuery);
+        return instrumentService.findInstrumentWithEarliestExpiry(instrumentQuery);
     }
 }
