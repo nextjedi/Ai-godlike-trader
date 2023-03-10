@@ -106,7 +106,7 @@ public class TipBasedTradingService {
         String orderType;
         if(quote.lastPrice < tipModel.getPrice())
             orderType = Constants.ORDER_TYPE_LIMIT;
-        else if(quote.lastPrice< tipModel.getPrice() * 1.02){
+        else if(quote.lastPrice< tipModel.getPrice() * 1.06){
             orderType = Constants.ORDER_TYPE_MARKET;
         }else {
             logger.info("price already moved - call"+tipModel.getPrice()+" current price"+ quote.lastPrice);
@@ -145,7 +145,7 @@ public class TipBasedTradingService {
 //                            place sell order and subscribe
                             if(order.status.equals(Constants.ORDER_COMPLETE)){
                                 logger.info("placing sell order and subscribe");
-                                logger.info("Bought at "+ instr.getTradingSymbol() + order.price + order.orderType + order.quantity);
+                                logger.info("Bought at "+ instr.getTradingSymbol() + order.averagePrice + order.orderType + order.quantity);
                                 buyOrder = order;
                                 double price = Double.parseDouble(order.averagePrice)*0.93;
                                 double trigger = Double.parseDouble(order.averagePrice)*0.95;
