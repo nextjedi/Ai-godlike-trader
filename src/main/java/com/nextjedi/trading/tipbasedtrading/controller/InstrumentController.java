@@ -20,9 +20,9 @@ public class InstrumentController {
     InstrumentService instrumentService;
 
     @PostMapping
-    public void insertInstruments(){
+    public boolean insertInstruments(){
         logger.info("Insert instrument Controller");
-        instrumentService.insertInstruments();
+        return instrumentService.insertInstruments();
     }
 
     @GetMapping
