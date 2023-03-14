@@ -110,7 +110,8 @@ public class TipBasedTradingService {
             orderType = Constants.ORDER_TYPE_MARKET;
         }else {
             logger.info("price already moved - call"+tipModel.getPrice()+" current price"+ quote.lastPrice);
-            return;
+            orderType = Constants.ORDER_TYPE_MARKET;
+//            return;
         }
         tickerProvider.setOnConnectedListener(new OnConnect() {
             @Override
