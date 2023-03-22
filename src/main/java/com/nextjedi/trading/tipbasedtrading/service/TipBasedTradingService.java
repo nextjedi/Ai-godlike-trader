@@ -45,6 +45,7 @@ public class TipBasedTradingService {
     int balance =12000;
     Order sellOrder;
     double sellPrice = 0;
+    int count=0;
     int qty=0;
     public KiteConnect connectToKite(){
         String apikey = "2himf7a1ff5edpjy";
@@ -106,7 +107,7 @@ public class TipBasedTradingService {
         String orderType;
         if(quote.lastPrice < tipModel.getPrice())
             orderType = Constants.ORDER_TYPE_LIMIT;
-        else if(quote.lastPrice< tipModel.getPrice() * 1.06){
+        else if(quote.lastPrice< tipModel.getPrice() * 1.07){
             orderType = Constants.ORDER_TYPE_MARKET;
         }else {
             logger.info("price already moved - call"+tipModel.getPrice()+" current price"+ quote.lastPrice);
@@ -120,6 +121,7 @@ public class TipBasedTradingService {
                  * */
                 logger.info("Kite connection established");
                 OrderParams orderParams = createBuyOrder(instr, tipModel.getPrice(),orderType);
+
                 try {
                     logger.info("placing buy order"+orderParams.product+" "+orderParams.price);
                     buyOrder = kiteSdk.placeOrder(orderParams, Constants.VARIETY_REGULAR);
@@ -147,9 +149,8 @@ public class TipBasedTradingService {
                                 logger.info("placing sell order and subscribe");
                                 logger.info("Bought at "+ instr.getTradingSymbol() + order.averagePrice + order.orderType + order.quantity);
                                 buyOrder = order;
-                                double price = Double.parseDouble(order.averagePrice)*0.93;
-                                double trigger = Double.parseDouble(order.averagePrice)*0.95;
-//                                todo: move to helper method
+                                double price = Double.parseDouble(order.averagePrice)*0.85;
+                                double trigger = Double.parseDouble(order.averagePrice)*0.87;
                                 price = Helper.tickMultiple(price, instr.tick_size);
                                 trigger =Helper.tickMultiple(trigger, instr.tick_size);
                                 OrderParams params =createSellOrder(instr,price,trigger, Integer.parseInt(order.quantity));
@@ -207,12 +208,13 @@ public class TipBasedTradingService {
                             if(tick.getLastTradedPrice()>sellPrice*1.05){
                                 try {
                                     logger.info("trail by 4 percent on every 1 percent movement");
-                                    double price = tick.getLastTradedPrice() *0.96;
-                                    double trigger = tick.getLastTradedPrice() *0.97;
+                                    double price = tick.getLastTradedPrice() *0.95;
+                                    double trigger = tick.getLastTradedPrice() *0.96;
                                     price =(int)(price/instr.tick_size)*instr.tick_size;
                                     trigger =(int)(trigger/instr.tick_size)*instr.tick_size;
                                     OrderParams orderP = createSellOrder(instr, price, trigger, qty);
                                     sellPrice = price;
+                                    logger.info(count +" number of times order modified");
                                     sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
                                 } catch (KiteException e) {
                                     throw new RuntimeException(e);
