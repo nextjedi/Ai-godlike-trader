@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.component.AzureSecrets;
 import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,10 +28,13 @@ public class InstrumentService {
     private TokenService tokenService;
 
     @Autowired
+    private AzureSecrets azureSecrets;
+    @Autowired
     InstrumentRepository instrumentRepository;
     public KiteConnect connectToKite(){
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
+        String apikey = azureSecrets.getSecret("API-KEY");
+
+        String apiSecret = azureSecrets.getSecret("API-SECRET");
         TokenAccess tokenAccess=tokenService.getToken();
         KiteConnect kiteSdk = new KiteConnect(apikey);
         kiteSdk.setAccessToken(tokenAccess.getAccesstoken());

@@ -1,6 +1,7 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
+import com.azure.security.keyvault.secrets.SecretClient;
+import com.nextjedi.trading.tipbasedtrading.component.AzureSecrets;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TipModel;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -8,7 +9,10 @@ import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
-import com.zerodhatech.models.*;
+import com.zerodhatech.models.Order;
+import com.zerodhatech.models.OrderParams;
+import com.zerodhatech.models.Quote;
+import com.zerodhatech.models.Tick;
 import com.zerodhatech.ticker.KiteTicker;
 import com.zerodhatech.ticker.OnConnect;
 import com.zerodhatech.ticker.OnOrderUpdate;
@@ -16,6 +20,7 @@ import com.zerodhatech.ticker.OnTicks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,8 +28,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Service
 public class TipBasedTradingService {
@@ -39,6 +42,9 @@ public class TipBasedTradingService {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private AzureSecrets azureSecrets;
+
     boolean active = false;
     Order buyOrder;
     String tag = "Ap2";
@@ -48,10 +54,11 @@ public class TipBasedTradingService {
     int count=0;
     int qty=0;
     public KiteConnect connectToKite(){
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
+        String apikey = azureSecrets.getSecret("API-KEY");
+
+        String apiSecret = azureSecrets.getSecret("API-SECRET");
         TokenAccess tokenAccess=tokenService.getToken();
-        KiteConnect kiteSdk = new KiteConnect(apikey);
+        KiteConnect kiteSdk = new KiteConnect("apikey");
         kiteSdk.setAccessToken(tokenAccess.getAccesstoken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
         return kiteSdk;
