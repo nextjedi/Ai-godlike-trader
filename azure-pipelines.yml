@@ -28,8 +28,12 @@ steps:
     mavenAuthenticateFeed: false
     effectivePomSkip: false
     sonarQubeRunAnalysis: false
-- task: DownloadBuildArtifacts@1
+- task: CopyFiles@2
   inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    downloadPath: '$(System.ArtifactsDirectory)'
+    Contents: 'target/*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'''
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'spring-boot-app'
