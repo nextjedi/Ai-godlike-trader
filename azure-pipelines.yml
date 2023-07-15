@@ -23,10 +23,12 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
     mavenVersionOption: 'Default'
     mavenAuthenticateFeed: false
     effectivePomSkip: false
     sonarQubeRunAnalysis: false
+  
 - task: AzureSpringCloud@0
   inputs:
     azureSubscription: 'Visual Studio Enterprise Subscription(a15f2ab5-5512-4e0e-a5e4-16a529fef591)'
