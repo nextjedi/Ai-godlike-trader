@@ -27,18 +27,3 @@ steps:
     mavenAuthenticateFeed: false
     effectivePomSkip: false
     sonarQubeRunAnalysis: false
-- task: AzureSpringCloud@0
-  inputs:
-    azureSubscription: 'Visual Studio Enterprise Subscription(a15f2ab5-5512-4e0e-a5e4-16a529fef591)'
-    Action: 'Deploy'
-    AzureSpringCloud: 'nextjedi-apps'
-    AppName: 'Algo'
-    UseStagingDeployment: true
-
-- task: AzureSpringCloud@0
-  inputs:
-    azureSubscription: 'Visual Studio Enterprise Subscription(a15f2ab5-5512-4e0e-a5e4-16a529fef591)'
-    Action: 'Deploy'
-    AzureSpringCloud: '/subscriptions/a15f2ab5-5512-4e0e-a5e4-16a529fef591/resourceGroups/AlgoTrading/providers/Microsoft.AppPlatform/Spring/algo-trading'
-    AppName: 'tip-based-trading'
-    UseStagingDeployment: true
