@@ -55,9 +55,3 @@ steps:
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'spring-boot-app'
-- task: Docker@2
-  inputs:
-    containerRegistry: 'algo'
-    repository: 'algo-trading'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
