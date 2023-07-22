@@ -77,7 +77,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<image>
-						<name>docker.io/arunabhp/algo-trading/${project.artifactId}</name>
+						<name>docker.io/library/algo-trading/${project.artifactId}</name>
 					</image>
 					<layers>
 						<enabled>true</enabled>
