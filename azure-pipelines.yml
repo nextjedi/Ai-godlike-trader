@@ -57,8 +57,8 @@ steps:
     repository: 'algo-trading'
     command: 'push'
     tags: 'latest'
-# - task: PublishBuildArtifacts@1
-#   displayName: 'Publish Artifact'
-#   inputs:
-#     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-#     ArtifactName: 'spring-boot-app'
+
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    Dockerfile: '**'
