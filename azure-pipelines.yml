@@ -34,6 +34,17 @@ steps:
     effectivePomSkip: false
     sonarQubeRunAnalysis: false
 
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'spring-boot:build-image'
+    publishJUnitResults: false
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'target'
