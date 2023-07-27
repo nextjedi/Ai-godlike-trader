@@ -59,10 +59,5 @@ steps:
   inputs:
     containerRegistry: 'algo'
     repository: 'algo-trading'
-    command: 'build'
-    Dockerfile: dockerfile
-
-- task: Docker@2
-  inputs:
     command: 'buildAndPush'
-    Dockerfile: '**'
+    Dockerfile: dockerfile
