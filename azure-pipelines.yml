@@ -58,6 +58,7 @@ steps:
   displayName: Push Docker image
   inputs:
     containerRegistry: 'algo'
-    repository: 'algo-trading'
+    repository: 'arunabhp/algo-trading'
     command: 'buildAndPush'
     Dockerfile: '**/dockerfile'
+    tags: '$(Build.BuildId)'
