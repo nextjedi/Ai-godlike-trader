@@ -46,8 +46,8 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '**'
-    Contents: '**'
+    SourceFolder: 'target'
+    Contents: '*.jar'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: Docker@2
