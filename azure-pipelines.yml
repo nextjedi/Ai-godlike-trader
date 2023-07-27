@@ -8,7 +8,9 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
-
+variables:
+  imageName: 'pipelines-javascript-docker'
+  DOCKER_BUILDKIT: 1
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
@@ -44,6 +46,8 @@ steps:
     effectivePomSkip: false
     sonarQubeRunAnalysis: false
 
+
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'target'
@@ -55,8 +59,8 @@ steps:
   inputs:
     containerRegistry: 'algo'
     repository: 'algo-trading'
-    command: 'push'
-    tags: 'latest'
+    command: 'build'
+    Dockerfile: app/Dockerfile
 
 - task: Docker@2
   inputs:
