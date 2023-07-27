@@ -60,4 +60,4 @@ steps:
     containerRegistry: 'algo'
     repository: 'algo-trading'
     command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+    Dockerfile: '**/dockerfile'
