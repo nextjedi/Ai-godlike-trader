@@ -60,7 +60,7 @@ steps:
     containerRegistry: 'algo'
     repository: 'algo-trading'
     command: 'build'
-    Dockerfile: app/Dockerfile
+    Dockerfile: dockerfile
 
 - task: Docker@2
   inputs:
