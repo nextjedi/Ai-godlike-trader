@@ -1,6 +1,5 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TipModel;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -8,7 +7,10 @@ import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
-import com.zerodhatech.models.*;
+import com.zerodhatech.models.Order;
+import com.zerodhatech.models.OrderParams;
+import com.zerodhatech.models.Quote;
+import com.zerodhatech.models.Tick;
 import com.zerodhatech.ticker.KiteTicker;
 import com.zerodhatech.ticker.OnConnect;
 import com.zerodhatech.ticker.OnOrderUpdate;
@@ -23,8 +25,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Service
 public class TipBasedTradingService {
@@ -45,6 +45,7 @@ public class TipBasedTradingService {
     int balance =12000;
     Order sellOrder;
     double sellPrice = 0;
+    boolean orderUpdateFlag = false;
     int count=0;
     int qty=0;
     public KiteConnect connectToKite(){
@@ -207,6 +208,11 @@ public class TipBasedTradingService {
                             logger.info("Current sell price " +sellPrice);
                             if(tick.getLastTradedPrice()>sellPrice*1.05){
                                 try {
+                                    if(orderUpdateFlag){
+                                        continue;
+                                    }
+                                    orderUpdateFlag = true;
+                                    logger.info("set order update flag to ", true);
                                     logger.info("trail by 4 percent on every 1 percent movement");
                                     double price = tick.getLastTradedPrice() *0.95;
                                     double trigger = tick.getLastTradedPrice() *0.96;
@@ -215,6 +221,8 @@ public class TipBasedTradingService {
                                     OrderParams orderP = createSellOrder(instr, price, trigger, qty);
                                     sellPrice = price;
                                     logger.info(count +" number of times order modified");
+                                    orderUpdateFlag = false;
+                                    logger.info("set order update flag to ", false);
                                     sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
                                 } catch (KiteException e) {
                                     throw new RuntimeException(e);

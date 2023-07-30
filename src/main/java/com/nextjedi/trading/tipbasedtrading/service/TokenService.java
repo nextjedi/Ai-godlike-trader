@@ -1,6 +1,5 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.zerodhatech.kiteconnect.KiteConnect;
@@ -21,6 +20,7 @@ public class TokenService {
     private TokenRepository tokenRepository;
 
     public void insert(String requestToken){
+        logger.info("inside insert token service method");
         TokenAccess token = new TokenAccess();
         String apikey = "2himf7a1ff5edpjy";
         String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
@@ -31,9 +31,9 @@ public class TokenService {
             token.setAccesstoken(user.accessToken);
             tokenRepository.deleteAll();
             tokenRepository.save(token);
-        } catch (KiteException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+            logger.info("Token updated");
+        } catch (KiteException| IOException e) {
+            logger.error("exception while inserting token");
             throw new RuntimeException(e);
         }
 
