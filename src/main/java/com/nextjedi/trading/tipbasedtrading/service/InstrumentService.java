@@ -41,7 +41,7 @@ public class InstrumentService {
         logger.info("Updating instruments");
         KiteConnect kiteSdk = connectToKite();
         try {
-            ArrayList<Instrument> instruments = (ArrayList<Instrument>) kiteSdk.getInstruments();
+            List<Instrument> instruments = kiteSdk.getInstruments();
             List<InstrumentWrapper> instrumentWrappers
                 =instruments.stream()
                     .filter(instrument -> instrument.getName() !=null && (instrument.getName().equals("FINNIFTY") ||instrument.getName().equals("BANKNIFTY")))
