@@ -53,7 +53,7 @@ public class TipBasedTradingService {
         String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
         TokenAccess tokenAccess=tokenService.getToken();
         KiteConnect kiteSdk = new KiteConnect(apikey);
-        kiteSdk.setAccessToken(tokenAccess.getAccesstoken());
+        kiteSdk.setAccessToken(tokenAccess.getAccessToken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
         return kiteSdk;
     }

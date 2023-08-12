@@ -1,14 +1,13 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.Instrument;
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.nextjedi.trading.tipbasedtrading.models.Constants.USER_ID;
 
 @Service
 public class InstrumentService {
@@ -28,11 +29,10 @@ public class InstrumentService {
     @Autowired
     InstrumentRepository instrumentRepository;
     public KiteConnect connectToKite(){
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
+        var secret =ApiSecret.apiKeys.get(USER_ID);
         TokenAccess tokenAccess=tokenService.getToken();
-        KiteConnect kiteSdk = new KiteConnect(apikey);
-        kiteSdk.setAccessToken(tokenAccess.getAccesstoken());
+        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
+        kiteSdk.setAccessToken(tokenAccess.getAccessToken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
         return kiteSdk;
     }

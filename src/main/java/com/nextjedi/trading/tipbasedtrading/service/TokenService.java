@@ -1,7 +1,9 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
+import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
@@ -19,17 +21,16 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
-    public void insert(String requestToken){
+    public void insert(TokenDTO requestToken){
         logger.info("inside insert token service method");
-        TokenAccess token = new TokenAccess();
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
-        KiteConnect kiteSdk = new KiteConnect(apikey);
+        var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
+        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
-            User user =kiteSdk.generateSession(requestToken,apiSecret);
+            User user =kiteSdk.generateSession(requestToken.getRequestToken(), secret.getApiSecret());
+            TokenAccess token = new TokenAccess();
             token.setPublicToken(user.publicToken);
-            token.setAccesstoken(user.accessToken);
-            tokenRepository.deleteAll();
+            token.setAccessToken(user.accessToken);
+            token.setUserId(requestToken.getUserId());
             tokenRepository.save(token);
             logger.info("Token updated");
         } catch (KiteException| IOException e) {
@@ -40,7 +41,12 @@ public class TokenService {
     }
 
     public TokenAccess getToken(){
+
         List<TokenAccess> tokens =tokenRepository.findAll();
         return tokens.get(0);
+    }
+    public List<TokenAccess> getTokenByUserId(String userId){
+        List<TokenAccess> tokens =tokenRepository.findByUserId(userId);
+        return tokens;
     }
 }
