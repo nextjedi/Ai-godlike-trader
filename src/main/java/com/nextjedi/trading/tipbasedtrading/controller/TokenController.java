@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/toke")
+@RequestMapping("/token")
 public class TokenController {
 
     Logger logger = LoggerFactory.getLogger(TokenController.class);
