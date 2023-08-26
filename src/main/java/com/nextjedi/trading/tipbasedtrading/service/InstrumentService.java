@@ -1,13 +1,11 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
-import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
-import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
-import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
-import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
+import com.nextjedi.trading.tipbasedtrading.models.*;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.Instrument;
+import org.apache.commons.lang3.EnumUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +42,10 @@ public class InstrumentService {
             List<Instrument> instruments = kiteSdk.getInstruments();
             List<InstrumentWrapper> instrumentWrappers
                 =instruments.stream()
-                    .filter(instrument -> instrument.getName() !=null && (instrument.getName().equals("FINNIFTY") ||instrument.getName().equals("BANKNIFTY")))
+                    .filter(instrument -> EnumUtils.isValidEnumIgnoreCase(InstrumentNames.class,instrument.getName()))
                     .map(InstrumentWrapper::new).collect(Collectors.toList());
             logger.info("Instruments fetched", instrumentWrappers.size());
+//            todo: call on need basis not everyday
             instrumentRepository.deleteAll();
             instrumentRepository.saveAll(instrumentWrappers);
             logger.info("Instruments updated");
