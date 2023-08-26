@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/toke")
+@RequestMapping("/token")
 public class TokenController {
 
     Logger logger = LoggerFactory.getLogger(TokenController.class);
@@ -26,13 +26,13 @@ public class TokenController {
         tokenService.insert(RequestToken);
     }
     @GetMapping
-    public TokenAccess getTokens(){
+    public List<TokenAccess> getTokens(){
         logger.info("Into the get token method");
         return tokenService.getToken();
     }
     @GetMapping("{userId}")
-    public List<TokenAccess> getTokenByUserId(@RequestParam String userId){
+    public TokenAccess getTokenByUserId(@RequestParam String userId){
         logger.info("Into the get token method");
-        return tokenService.getTokenByUserId(userId);
+        return tokenService.getLatestTokenByUserId(userId);
     }
 }
