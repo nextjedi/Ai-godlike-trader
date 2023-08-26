@@ -1,6 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TipModel;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -8,7 +8,10 @@ import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
-import com.zerodhatech.models.*;
+import com.zerodhatech.models.Order;
+import com.zerodhatech.models.OrderParams;
+import com.zerodhatech.models.Quote;
+import com.zerodhatech.models.Tick;
 import com.zerodhatech.ticker.KiteTicker;
 import com.zerodhatech.ticker.OnConnect;
 import com.zerodhatech.ticker.OnOrderUpdate;
@@ -23,8 +26,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import static com.nextjedi.trading.tipbasedtrading.models.Constants.MAXIMUM_VALUE_PER_TRADE;
+import static com.nextjedi.trading.tipbasedtrading.models.Constants.USER_ID;
 
 @Service
 public class TipBasedTradingService {
@@ -42,23 +46,22 @@ public class TipBasedTradingService {
     boolean active = false;
     Order buyOrder;
     String tag = "Ap2";
-    int balance =12000;
     Order sellOrder;
     double sellPrice = 0;
+    boolean orderUpdateFlag = false;
     int count=0;
     int qty=0;
     public KiteConnect connectToKite(){
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
-        TokenAccess tokenAccess=tokenService.getToken();
-        KiteConnect kiteSdk = new KiteConnect(apikey);
-        kiteSdk.setAccessToken(tokenAccess.getAccesstoken());
+        var secret = ApiSecret.apiKeys.get(USER_ID);
+        TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
+        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
+        kiteSdk.setAccessToken(tokenAccess.getAccessToken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
         return kiteSdk;
     }
 
-    private OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper,int price, String orderType ){
-        int lotCount = balance /(price*instrumentWrapper.getLot_size());
+    private OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper,int price,float balance, String orderType ){
+        int lotCount = (int) (balance /(price*instrumentWrapper.getLot_size()));
         OrderParams orderParams = new OrderParams();
         orderParams.quantity = instrumentWrapper.getLot_size()*lotCount;
         orderParams.orderType = orderType;
@@ -73,7 +76,6 @@ public class TipBasedTradingService {
     }
 
     private OrderParams createSellOrder(InstrumentWrapper instrumentWrapper,double price,double trigger, int quantity){
-        double lotCount = balance /(price*instrumentWrapper.getLot_size());
         OrderParams orderParams = new OrderParams();
         orderParams.quantity = quantity;
         orderParams.orderType = Constants.ORDER_TYPE_SL;
@@ -84,7 +86,7 @@ public class TipBasedTradingService {
         orderParams.validity = Constants.VALIDITY_DAY;
         orderParams.price = price;
         orderParams.triggerPrice = trigger;
-        orderParams.tag = tag;  //tag is optional and it cannot be more than 8 characters and only alphanumeric is allowed
+        orderParams.tag = tag;  //tag is optional, and it cannot be more than 8 characters and only alphanumeric is allowed
         return orderParams;
     }
     public void trade(TipModel tipModel) throws IOException, KiteException {
@@ -96,23 +98,15 @@ public class TipBasedTradingService {
         tokens.add((instr.getInstrument_token()));
         Map<String, Quote> quoteMap = kiteSdk.getQuote(new String[]{String.valueOf(instr.getInstrument_token())});
         Quote quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
-        float balance = Float.parseFloat(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
-
+        var margin =kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY);
+        var balance = Math.min(Float.parseFloat(margin.net), MAXIMUM_VALUE_PER_TRADE);
 //        todo: if balance is available
         if(balance < quote.lastPrice* instr.getLot_size()){
             logger.warn("Balance not available");
             return;
         }
         logger.info("Instruments found and balance available");
-        String orderType;
-        if(quote.lastPrice < tipModel.getPrice())
-            orderType = Constants.ORDER_TYPE_LIMIT;
-        else if(quote.lastPrice< tipModel.getPrice() * 1.07){
-            orderType = Constants.ORDER_TYPE_MARKET;
-        }else {
-            logger.info("price already moved - call"+tipModel.getPrice()+" current price"+ quote.lastPrice);
-            return;
-        }
+
         tickerProvider.setOnConnectedListener(new OnConnect() {
             @Override
             public void onConnected() {
@@ -120,15 +114,12 @@ public class TipBasedTradingService {
                  * By default, all tokens are subscribed for modeQuote.
                  * */
                 logger.info("Kite connection established");
-                OrderParams orderParams = createBuyOrder(instr, tipModel.getPrice(),orderType);
+                OrderParams orderParams = createBuyOrder(instr, tipModel.getPrice(),balance, Constants.ORDER_TYPE_MARKET);
 
                 try {
                     logger.info("placing buy order"+orderParams.product+" "+orderParams.price);
                     buyOrder = kiteSdk.placeOrder(orderParams, Constants.VARIETY_REGULAR);
-                } catch (KiteException e) {
-                    logger.error(e.getMessage());
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
+                } catch (KiteException | IOException e) {
                     logger.error(e.getMessage());
                     throw new RuntimeException(e);
                 }
@@ -155,15 +146,11 @@ public class TipBasedTradingService {
                                 trigger =Helper.tickMultiple(trigger, instr.tick_size);
                                 OrderParams params =createSellOrder(instr,price,trigger, Integer.parseInt(order.quantity));
                                 sellOrder =kiteSdk.placeOrder(params,Constants.VARIETY_REGULAR);
-                                sellPrice =Double.parseDouble(order.averagePrice);
-                                qty = params.quantity;
                                 tickerProvider.setMode(tokens, KiteTicker.modeLTP);
                                 tickerProvider.subscribe(tokens);
 
                             }
-                        } catch (KiteException e) {
-                            throw new RuntimeException(e);
-                        } catch (IOException e) {
+                        } catch (KiteException | IOException e) {
                             throw new RuntimeException(e);
                         }
                     }else if(order.transactionType.equals(Constants.TRANSACTION_TYPE_SELL)){
@@ -174,7 +161,6 @@ public class TipBasedTradingService {
                             }else if(order.status.equals(Constants.ORDER_TRIGGER_PENDING)){
 //                                todo: once sell order gets failed or rejected
                                 logger.info("sell order updated "+ order.price);
-                                sellPrice = Double.parseDouble(order.price);
                             }else if(order.status.equals(Constants.ORDER_REJECTED)){
                                 logger.info("order rejected" + order.statusMessage);
                             }
@@ -189,38 +175,41 @@ public class TipBasedTradingService {
             try {
                 logger.info(kiteSdk.getMargins().toString());
                 tickerProvider.unsubscribe(tokens);
-            } catch (KiteException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (KiteException | IOException e) {
                 throw new RuntimeException(e);
             }
         });
         tickerProvider.setOnTickerArrivalListener(new OnTicks() {
             @Override
             public void onTicks(ArrayList<Tick> ticks) {
-                NumberFormat formatter = new DecimalFormat();
-                logger.info("ticks size "+ticks.size());
-                if(ticks.size() > 0) {
+                logger.info("ticks size ", ticks.size());
+                if(!ticks.isEmpty()) {
                     for (Tick tick:ticks) {
                         if(tick.getInstrumentToken()== instr.getInstrument_token()){
-                            logger.info("Tick " + tick.getLastTradedPrice());
-                            logger.info("Current sell price " +sellPrice);
-                            if(tick.getLastTradedPrice()>sellPrice*1.05){
-                                try {
-                                    logger.info("trail by 4 percent on every 1 percent movement");
-                                    double price = tick.getLastTradedPrice() *0.95;
-                                    double trigger = tick.getLastTradedPrice() *0.96;
-                                    price =(int)(price/instr.tick_size)*instr.tick_size;
-                                    trigger =(int)(trigger/instr.tick_size)*instr.tick_size;
-                                    OrderParams orderP = createSellOrder(instr, price, trigger, qty);
-                                    sellPrice = price;
-                                    logger.info(count +" number of times order modified");
-                                    sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
-                                } catch (KiteException e) {
-                                    throw new RuntimeException(e);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                            try {
+                                var order =kiteSdk.getOrders();
+                                for (var o :order){
+                                    if(!o.status.equalsIgnoreCase(Constants.ORDER_OPEN)){
+                                        continue;
+                                    }
+                                    float triggerPrice = Float.parseFloat(o.triggerPrice);
+                                    var movement = tick.getLastTradedPrice() - triggerPrice;
+                                    var movementPercent =movement*100/triggerPrice;
+                                    if(movement >2 && movementPercent >4){
+                                        logger.info("price moved by more than 2 rs and 4%");
+                                        double price = tick.getLastTradedPrice() -(movement*0.5);
+                                        double trigger = tick.getLastTradedPrice() -(movement*0.4);
+                                        price =Helper.tickMultiple(price,instr.tick_size);
+                                        trigger =Helper.tickMultiple(trigger,instr.tick_size);
+                                        OrderParams orderP = createSellOrder(instr, price, trigger, qty);
+                                        logger.info(count +" number of times order modified");
+                                        logger.info("set order update flag to ", false);
+                                        sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
+                                    }
                                 }
+
+                            } catch (KiteException | IOException e) {
+                                throw new RuntimeException(e);
                             }
                         }
                     }

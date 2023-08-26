@@ -1,8 +1,9 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.controller.TokenController;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
+import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
@@ -20,27 +21,30 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
-    public void insert(String requestToken){
-        TokenAccess token = new TokenAccess();
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
-        KiteConnect kiteSdk = new KiteConnect(apikey);
+    public void insert(TokenDTO requestToken){
+        logger.info("inside insert token service method");
+        var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
+        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
-            User user =kiteSdk.generateSession(requestToken,apiSecret);
+            User user =kiteSdk.generateSession(requestToken.getRequestToken(), secret.getApiSecret());
+            TokenAccess token = new TokenAccess();
             token.setPublicToken(user.publicToken);
-            token.setAccesstoken(user.accessToken);
-            tokenRepository.deleteAll();
+            token.setAccessToken(user.accessToken);
+            token.setUserId(requestToken.getUserId());
             tokenRepository.save(token);
-        } catch (KiteException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+            logger.info("Token updated");
+        } catch (KiteException| IOException e) {
+            logger.error("exception while inserting token");
             throw new RuntimeException(e);
         }
 
     }
 
-    public TokenAccess getToken(){
-        List<TokenAccess> tokens =tokenRepository.findAll();
-        return tokens.get(0);
+    public List<TokenAccess> getToken(){
+        return tokenRepository.findAll();
+    }
+    public TokenAccess getLatestTokenByUserId(String userId){
+        TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
+        return token;
     }
 }

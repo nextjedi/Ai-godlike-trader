@@ -39,4 +39,14 @@ public class InstrumentQuery {
     public void setExpiry(Date expiry) {
         this.expiry = expiry;
     }
+
+    @Override
+    public String toString() {
+        return "InstrumentQuery{" +
+                "Strike=" + Strike +
+                ", name='" + name + '\'' +
+                ", instrumentType='" + instrumentType + '\'' +
+                ", expiry=" + expiry +
+                '}';
+    }
 }
