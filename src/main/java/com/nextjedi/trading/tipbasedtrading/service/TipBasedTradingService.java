@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TipModel;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -26,6 +27,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static com.nextjedi.trading.tipbasedtrading.models.Constants.USER_ID;
+
 @Service
 public class TipBasedTradingService {
     final long threeSeconds = 3 * 1000;
@@ -49,10 +52,9 @@ public class TipBasedTradingService {
     int count=0;
     int qty=0;
     public KiteConnect connectToKite(){
-        String apikey = "2himf7a1ff5edpjy";
-        String apiSecret = "87mebxtvu3226igmjnkjfjfcrgiphfxb";
-        TokenAccess tokenAccess=tokenService.getToken();
-        KiteConnect kiteSdk = new KiteConnect(apikey);
+        var secret = ApiSecret.apiKeys.get(USER_ID);
+        TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
+        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         kiteSdk.setAccessToken(tokenAccess.getAccessToken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
         return kiteSdk;
@@ -190,22 +192,19 @@ public class TipBasedTradingService {
             try {
                 logger.info(kiteSdk.getMargins().toString());
                 tickerProvider.unsubscribe(tokens);
-            } catch (KiteException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (KiteException | IOException e) {
                 throw new RuntimeException(e);
             }
         });
         tickerProvider.setOnTickerArrivalListener(new OnTicks() {
             @Override
             public void onTicks(ArrayList<Tick> ticks) {
-                NumberFormat formatter = new DecimalFormat();
-                logger.info("ticks size "+ticks.size());
-                if(ticks.size() > 0) {
+                logger.info("ticks size ", ticks.size());
+                if(!ticks.isEmpty()) {
                     for (Tick tick:ticks) {
                         if(tick.getInstrumentToken()== instr.getInstrument_token()){
-                            logger.info("Tick " + tick.getLastTradedPrice());
-                            logger.info("Current sell price " +sellPrice);
+                            logger.info("Tick ", tick.getLastTradedPrice());
+                            logger.info("Current sell price ", sellPrice);
                             if(tick.getLastTradedPrice()>sellPrice*1.05){
                                 try {
                                     if(orderUpdateFlag){
@@ -224,9 +223,7 @@ public class TipBasedTradingService {
                                     orderUpdateFlag = false;
                                     logger.info("set order update flag to ", false);
                                     sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
-                                } catch (KiteException e) {
-                                    throw new RuntimeException(e);
-                                } catch (IOException e) {
+                                } catch (KiteException | IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             }

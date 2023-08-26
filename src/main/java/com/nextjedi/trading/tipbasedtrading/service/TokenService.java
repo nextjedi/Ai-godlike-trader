@@ -40,13 +40,11 @@ public class TokenService {
 
     }
 
-    public TokenAccess getToken(){
-
-        List<TokenAccess> tokens =tokenRepository.findAll();
-        return tokens.get(0);
+    public List<TokenAccess> getToken(){
+        return tokenRepository.findAll();
     }
-    public List<TokenAccess> getTokenByUserId(String userId){
-        List<TokenAccess> tokens =tokenRepository.findByUserId(userId);
-        return tokens;
+    public TokenAccess getLatestTokenByUserId(String userId){
+        TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
+        return token;
     }
 }

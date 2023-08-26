@@ -30,7 +30,7 @@ public class InstrumentService {
     InstrumentRepository instrumentRepository;
     public KiteConnect connectToKite(){
         var secret =ApiSecret.apiKeys.get(USER_ID);
-        TokenAccess tokenAccess=tokenService.getToken();
+        TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         kiteSdk.setAccessToken(tokenAccess.getAccessToken());
         kiteSdk.setPublicToken(tokenAccess.getPublicToken());
@@ -45,16 +45,14 @@ public class InstrumentService {
             List<InstrumentWrapper> instrumentWrappers
                 =instruments.stream()
                     .filter(instrument -> instrument.getName() !=null && (instrument.getName().equals("FINNIFTY") ||instrument.getName().equals("BANKNIFTY")))
-                    .map(instrument -> new InstrumentWrapper(instrument)).collect(Collectors.toList());
-            logger.info("Instruments fetched" + instrumentWrappers.size());
+                    .map(InstrumentWrapper::new).collect(Collectors.toList());
+            logger.info("Instruments fetched", instrumentWrappers.size());
             instrumentRepository.deleteAll();
             instrumentRepository.saveAll(instrumentWrappers);
             logger.info("Instruments updated");
             return true;
 
-        } catch (KiteException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (KiteException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -62,7 +60,7 @@ public class InstrumentService {
     public InstrumentWrapper findInstrumentWithEarliestExpiry(InstrumentQuery instrumentQuery){
         List<InstrumentWrapper> instruments = instrumentRepository.findByStrikeAndNameAndInstrumentTypeAndSegment(
                 instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), "NFO-OPT");
-        logger.info("number of instrument "+instruments.size());
+        logger.info("number of instrument ", instruments.size());
         Collections.sort(instruments, Comparator.comparing(InstrumentWrapper::getExpiry));
         return instruments.get(0);
     }
