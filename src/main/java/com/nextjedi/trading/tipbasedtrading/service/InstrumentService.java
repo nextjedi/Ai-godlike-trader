@@ -61,6 +61,7 @@ public class InstrumentService {
                 instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), "NFO-OPT");
         logger.info("number of instrument ", instruments.size());
         Collections.sort(instruments, Comparator.comparing(InstrumentWrapper::getExpiry));
+//        todo: handle empty collection
         return instruments.get(0);
     }
 }
