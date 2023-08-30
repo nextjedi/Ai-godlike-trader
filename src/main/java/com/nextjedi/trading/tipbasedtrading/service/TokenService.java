@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.exception.TokenNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
 import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -7,8 +8,7 @@ import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +16,13 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
+@Slf4j
 public class TokenService {
-    Logger logger = LoggerFactory.getLogger(TokenService.class);
     @Autowired
     private TokenRepository tokenRepository;
 
     public void insert(TokenDTO requestToken){
-        logger.info("inside insert token service method");
+        log.info("inside insert token service method");
         var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
@@ -32,19 +32,30 @@ public class TokenService {
             token.setAccessToken(user.accessToken);
             token.setUserId(requestToken.getUserId());
             tokenRepository.save(token);
-            logger.info("Token updated");
+            log.info("Token updated");
         } catch (KiteException| IOException e) {
-            logger.error("exception while inserting token");
+            log.error("exception while inserting token");
             throw new RuntimeException(e);
         }
 
     }
 
     public List<TokenAccess> getToken(){
-        return tokenRepository.findAll();
+        log.info("inside get token service method");
+        var tokens = tokenRepository.findAll();
+        log.info("number of tokens found ",tokens.size());
+        return tokens;
+        
     }
     public TokenAccess getLatestTokenByUserId(String userId){
-        TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
-        return token;
+        log.info("inside get token service method");
+        try {
+            TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
+            log.info("Token found for ",token.getUserId());
+            return token;
+        }catch (Exception e){
+            log.error("token is not available now");
+            throw new TokenNotFoundException(e.getMessage());
+        }
     }
 }
