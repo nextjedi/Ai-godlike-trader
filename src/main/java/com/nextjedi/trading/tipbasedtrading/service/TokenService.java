@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -51,8 +52,12 @@ public class TokenService {
         log.info("inside get token service method");
         try {
             TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
-            log.info("Token found for ",token.getUserId());
-            return token;
+            if(Objects.nonNull(token)){
+                log.info(token.toString());
+                log.info("Token found for ",token.getUserId());
+                return token;
+            }
+            throw new TokenNotFoundException("Token is null");
         }catch (Exception e){
             log.error("token is not available now");
             throw new TokenNotFoundException(e.getMessage());
