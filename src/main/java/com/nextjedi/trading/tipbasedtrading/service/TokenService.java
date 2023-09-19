@@ -54,7 +54,7 @@ public class TokenService {
             TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
             if(Objects.nonNull(token)){
                 log.info(token.toString());
-                log.info("Token found for ",token.getUserId());
+                log.info("Token found for " + token.getUserId());
                 return token;
             }
             throw new TokenNotFoundException("Token is null");

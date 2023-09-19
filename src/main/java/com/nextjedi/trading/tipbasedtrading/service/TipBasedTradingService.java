@@ -91,15 +91,15 @@ public class TipBasedTradingService {
         tokens.add((instr.getInstrument_token()));
         Map<String, Quote> quoteMap = kiteSdk.getQuote(new String[]{String.valueOf(instr.getInstrument_token())});
         Quote quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
-        var margin =kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY);
-        var balance = Math.min(Float.parseFloat(margin.net), MAXIMUM_VALUE_PER_TRADE);
+        float balance = Float.parseFloat(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
+
 //        todo: if balance is available
+        log.info("Instrument " +" "+ instr.getLot_size() +" "+instr.getLast_price()+" "+instr);
         if(balance < quote.lastPrice* instr.getLot_size()){
-            log.warn("Balance not available");
+            log.warn("Balance not available "+ balance);
             return;
         }
-        log.info("Instruments found and balance available ", balance , instr.getLot_size(), quote.lastPrice);
-        log.info("Instrument " ,instr.getLot_size(),instr.getLast_price());
+        log.info("Instruments found and balance available " +" " + balance +" "+ instr.getLot_size()+" "+ quote.lastPrice);
 
         tickerProvider.setOnConnectedListener(() -> {
             /** Subscribe ticks for token.
@@ -109,16 +109,16 @@ public class TipBasedTradingService {
             OrderParams orderParams = createBuyOrder(instr, tipModel.getPrice(),balance, Constants.ORDER_TYPE_MARKET);
 
             try {
-                log.info("placing buy order"+orderParams.product," ",orderParams.price);
+                log.info("placing buy order "+orderParams.product +" "+orderParams.price);
                 buyOrder = kiteSdk.placeOrder(orderParams, Constants.VARIETY_REGULAR);
-                log.info("Order placed", buyOrder.orderId);
+                log.info("Order placed "+ buyOrder.orderId);
             } catch (KiteException | IOException e) {
                 log.error(e.getMessage());
                 throw new RuntimeException(e);
             }
         });
         tickerProvider.setOnOrderUpdateListener(order -> {
-            log.info("order update "+order.orderId, " ",order.status);
+            log.info("order update "+order.orderId + " " + order.status);
             log.info(order.toString());
             if(order.tag.equals(tag)){
                 if(order.transactionType.equals(Constants.TRANSACTION_TYPE_BUY)){
@@ -130,7 +130,7 @@ public class TipBasedTradingService {
 //                            place sell order and subscribe
                         if(order.status.equals(Constants.ORDER_COMPLETE)){
                             log.info("placing sell order and subscribe");
-                            log.info("Bought at "+ instr.getTradingSymbol(),"@", order.averagePrice, " ", order.orderType ," ", order.quantity);
+                            log.info("Bought at "+ instr.getTradingSymbol() +"@"+ order.averagePrice+ " "+ order.orderType +" "+ order.quantity);
                             buyOrder = order;
                             double price = Double.parseDouble(order.averagePrice)*0.85;
                             double trigger = Double.parseDouble(order.averagePrice)*0.87;
@@ -138,7 +138,7 @@ public class TipBasedTradingService {
                             trigger =Helper.tickMultiple(trigger, instr.tick_size);
                             OrderParams params =createSellOrder(instr,price,trigger, Integer.parseInt(order.quantity));
                             sellOrder =kiteSdk.placeOrder(params,Constants.VARIETY_REGULAR);
-                            log.info("Sell order placed", sellOrder.orderId);
+                            log.info("Sell order placed "+ sellOrder.orderId);
                             log.info("subscribe to token");
                             tickerProvider.setMode(tokens, KiteTicker.modeLTP);
                             tickerProvider.subscribe(tokens);
@@ -151,12 +151,12 @@ public class TipBasedTradingService {
                 }else if(order.transactionType.equals(Constants.TRANSACTION_TYPE_SELL)){
                     if(order.orderId.equals(sellOrder.orderId)){
                         if(order.status.equals(Constants.ORDER_COMPLETE)){
-                            log.info("sl order complete "+ instr.getTradingSymbol(),"@", order.averagePrice, " ", order.orderType ," ", order.quantity);
+                            log.info("sl order complete "+ instr.getTradingSymbol()+"@"+ order.averagePrice+ " "+ order.orderType +" "+ order.quantity);
                             tickerProvider.disconnect();
                         }else if(order.status.equals(Constants.ORDER_TRIGGER_PENDING)){
 //                                todo: once sell order gets failed or rejected
-                            log.info("sell order updated -> trigger pending"+ order.price);
-                            log.info("sl order "+ instr.getTradingSymbol(),"@", order.averagePrice, " ", order.orderType ," ", order.quantity);
+                            log.info("sell order updated -> trigger pending "+ order.price);
+                            log.info("sl order "+ instr.getTradingSymbol()+"@"+ order.averagePrice+ " "+ order.orderType +" "+ order.quantity);
                         }else if(order.status.equals(Constants.ORDER_REJECTED)){
                             log.error("order rejected" + order.statusMessage);
                             log.error(order.toString());
@@ -195,8 +195,8 @@ public class TipBasedTradingService {
                                     price =Helper.tickMultiple(price,instr.tick_size);
                                     trigger =Helper.tickMultiple(trigger,instr.tick_size);
                                     OrderParams orderP = createSellOrder(instr, price, trigger, qty);
-                                    log.info(count +" number of times order modified");
-                                    log.info("set order update flag to ", false);
+                                    log.info(" number of times order modified "+count);
+                                    log.info("set order update flag to "+ false);
                                     sellOrder =kiteSdk.modifyOrder(sellOrder.orderId,orderP,Constants.VARIETY_REGULAR);
                                 }
                             }

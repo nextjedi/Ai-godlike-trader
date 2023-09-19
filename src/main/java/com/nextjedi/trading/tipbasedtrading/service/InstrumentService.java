@@ -64,14 +64,14 @@ public class InstrumentService {
             var instrument = instrumentRepository.findTopByStrikeAndNameAndInstrumentTypeAndSegment(
                     instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), OPTION_SEGMENT, Sort.by(Sort.Direction.DESC,EXPIRY));
             if(Objects.nonNull(instrument)){
-                log.info("instrument found", instrument.getName());
+                log.info("instrument found "+ instrument.getName());
                 return instrument;
             }else {
                 throw new InstrumentNotFoundException("Instrument is null");
             }
         }catch (Exception e){
-            log.error("Instrument not available", e.getMessage());
-            log.error("Query", instrumentQuery.toString());
+            log.error("Instrument not available"+ e.getMessage());
+            log.error("Query"+ instrumentQuery.toString());
             throw new InstrumentNotFoundException(e.getMessage());
         }
     }
