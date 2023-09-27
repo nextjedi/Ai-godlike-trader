@@ -3,6 +3,7 @@ package com.nextjedi.trading.tipbasedtrading.service;
 import com.nextjedi.trading.tipbasedtrading.exception.TokenNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
 import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
+import com.nextjedi.trading.tipbasedtrading.models.Constants;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
@@ -21,12 +22,15 @@ import java.util.Objects;
 public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
+    @Autowired
+    private PlayWrightAutomationService playWrightAutomationService;
 
     public void insert(TokenDTO requestToken){
         log.info("inside insert token service method");
-        var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
+        var secret =ApiSecret.apiKeys.get("LU2942");
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
+            playWrightAutomationService.generateToken(secret.getApiKey(), Constants.USER_ID,Constants.PASSWORD,"KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2");
             User user =kiteSdk.generateSession(requestToken.getRequestToken(), secret.getApiSecret());
             TokenAccess token = new TokenAccess();
             token.setPublicToken(user.publicToken);
