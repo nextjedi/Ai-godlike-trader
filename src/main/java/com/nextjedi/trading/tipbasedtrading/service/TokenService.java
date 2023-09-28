@@ -27,10 +27,10 @@ public class TokenService {
 
     public void insert(TokenDTO requestToken){
         log.info("inside insert token service method");
-        var secret =ApiSecret.apiKeys.get("LU2942");
+        var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
-            playWrightAutomationService.generateToken(secret.getApiKey(), Constants.USER_ID,Constants.PASSWORD,"KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2");
+//            playWrightAutomationService.generateToken(secret.getApiKey(), Constants.USER_ID,Constants.PASSWORD,"KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2");
             User user =kiteSdk.generateSession(requestToken.getRequestToken(), secret.getApiSecret());
             TokenAccess token = new TokenAccess();
             token.setPublicToken(user.publicToken);
