@@ -62,7 +62,7 @@ public class InstrumentService {
         log.info("inside find instrument for the call");
         try {
             var instrument = instrumentRepository.findTopByStrikeAndNameAndInstrumentTypeAndSegment(
-                    instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), OPTION_SEGMENT, Sort.by(Sort.Direction.DESC,EXPIRY));
+                    instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), OPTION_SEGMENT, Sort.by(Sort.Direction.ASC,EXPIRY));
             if(Objects.nonNull(instrument)){
                 log.info("instrument found "+ instrument.getName());
                 return instrument;
