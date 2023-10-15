@@ -10,10 +10,12 @@ import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,19 +27,22 @@ public class TokenService {
     @Autowired
     private PlayWrightAutomationService playWrightAutomationService;
 
-    public void insert(TokenDTO requestToken){
+    public TokenAccess insert(String userId){
         log.info("inside insert token service method");
-        var secret =ApiSecret.apiKeys.get(requestToken.getUserId());
+//        todo move secret to db(encrypting) or vault
+        var secret =ApiSecret.apiKeys.get(userId);
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
         try {
-//            playWrightAutomationService.generateToken(secret.getApiKey(), Constants.USER_ID,Constants.PASSWORD,"KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2");
-            User user =kiteSdk.generateSession(requestToken.getRequestToken(), secret.getApiSecret());
+            var requestToken =playWrightAutomationService.generateToken(secret.getApiKey(), userId,secret.getPassword(),secret.getTotpKey());
+            User user =kiteSdk.generateSession(requestToken, secret.getApiSecret());
+
             TokenAccess token = new TokenAccess();
             token.setPublicToken(user.publicToken);
             token.setAccessToken(user.accessToken);
-            token.setUserId(requestToken.getUserId());
+            token.setUserId(userId);
             tokenRepository.save(token);
             log.info("Token updated");
+            return token;
         } catch (KiteException| IOException e) {
             log.error("exception while inserting token");
             throw new RuntimeException(e);
@@ -53,15 +58,25 @@ public class TokenService {
         
     }
     public TokenAccess getLatestTokenByUserId(String userId){
+        return getLatestTokenByUserId(userId,false);
+    }
+    public TokenAccess getLatestTokenByUserId(String userId,boolean forceRefresh){
         log.info("inside get token service method");
         try {
+            if(forceRefresh){
+                log.info("Refresh the token without checking");
+                return insert(userId);
+            }
             TokenAccess token =tokenRepository.findTopByUserIdOrderByCreatedAtDesc(userId);
-            if(Objects.nonNull(token)){
+            if(Objects.nonNull(token) && DateUtils.isSameDay(token.getCreatedAt(),new Date())){
                 log.info(token.toString());
                 log.info("Token found for " + token.getUserId());
+
                 return token;
+            }else {
+                log.info("generating token");
+                return insert(userId);
             }
-            throw new TokenNotFoundException("Token is null");
         }catch (Exception e){
             log.error("token is not available now");
             throw new TokenNotFoundException(e.getMessage());

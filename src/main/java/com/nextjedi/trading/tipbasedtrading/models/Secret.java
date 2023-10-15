@@ -9,5 +9,8 @@ public class Secret {
 
     private String apiKey;
     private String apiSecret;
+    private String password;
+
+    private String totpKey;
 
 }

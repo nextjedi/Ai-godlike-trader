@@ -15,12 +15,6 @@ import java.util.List;
 public class TokenController {
     @Autowired
     private TokenService tokenService;
-
-    @PostMapping
-    public void insertToken(@RequestBody TokenDTO requestToken){
-        log.info("Inside the post token controller");
-        tokenService.insert(requestToken);
-    }
     @GetMapping
     public List<TokenAccess> getTokens(){
         log.info("Into the get token controller");
