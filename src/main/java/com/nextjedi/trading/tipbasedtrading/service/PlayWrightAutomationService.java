@@ -25,7 +25,6 @@ public class PlayWrightAutomationService {
             var options = new BrowserType.LaunchOptions();
             Browser browser = playwright.chromium().launch();
             Page page = browser.newPage();
-//            todo move the magic string to constant or final
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");
             page.locator("#userid").fill(userId);
             page.locator("#password").fill(password);
