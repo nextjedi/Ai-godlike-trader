@@ -155,6 +155,7 @@ public class KiteService {
                 }
             }
         });
+        kiteTicker.connect();
     }
 
 //    todo token automation selenium
