@@ -1,10 +1,14 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.ToString;
 
 import java.util.Date;
 
 @Entity
+@Data
+@ToString
 public class InstrumentWrapper {
     @Id
     public long instrument_token;

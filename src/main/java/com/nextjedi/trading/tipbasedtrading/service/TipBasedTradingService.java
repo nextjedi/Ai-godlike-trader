@@ -8,10 +8,7 @@ import com.nextjedi.trading.tipbasedtrading.util.OrderParamUtil;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
-import com.zerodhatech.models.Order;
-import com.zerodhatech.models.OrderParams;
-import com.zerodhatech.models.Quote;
-import com.zerodhatech.models.Tick;
+import com.zerodhatech.models.*;
 import com.zerodhatech.ticker.KiteTicker;
 import com.zerodhatech.ticker.OnConnect;
 import com.zerodhatech.ticker.OnOrderUpdate;
@@ -54,10 +51,10 @@ public class TipBasedTradingService {
         InstrumentWrapper instr = instrumentService.findInstrumentWithEarliestExpiry(tipModel.getInstrument());
         ArrayList<Long> tokens = new ArrayList<>();
         tokens.add((instr.getInstrument_token()));
-        Map<String, Quote> quoteMap = kiteSdk.getQuote(new String[]{String.valueOf(instr.getInstrument_token())});
-        Quote quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
-        var margin =kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY);
-        var balance = Math.min(Float.parseFloat(margin.net), MAXIMUM_VALUE_PER_TRADE);
+        Map<String, LTPQuote> quoteMap = kiteSdk.getLTP(new String[]{String.valueOf(instr.getInstrument_token())});
+        var quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
+        float balance = Float.parseFloat(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
+
 //        todo: if balance is available
         if(balance < quote.lastPrice* instr.getLot_size()){
             log.warn("Balance not available");
