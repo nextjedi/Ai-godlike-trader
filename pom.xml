@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>com.zerodhatech.kiteconnect</groupId>
 			<artifactId>kiteconnect</artifactId>
-			<version>3.3.2</version>
+			<version>3.4.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
 		<dependency>

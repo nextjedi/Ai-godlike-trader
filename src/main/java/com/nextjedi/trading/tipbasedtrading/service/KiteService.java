@@ -1,72 +1,71 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
-import com.nextjedi.trading.tipbasedtrading.models.TipModel;
+import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
+import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.nextjedi.trading.tipbasedtrading.util.OrderParamUtil;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
-import com.zerodhatech.models.*;
+import com.zerodhatech.models.Order;
+import com.zerodhatech.models.OrderParams;
+import com.zerodhatech.models.Tick;
 import com.zerodhatech.ticker.KiteTicker;
 import com.zerodhatech.ticker.OnConnect;
 import com.zerodhatech.ticker.OnOrderUpdate;
 import com.zerodhatech.ticker.OnTicks;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Objects;
 
-@Service
-@Slf4j
-public class TipBasedTradingService {
-    @Autowired
-    private InstrumentService instrumentService;
-    @Autowired
-    private KiteService kiteService;
-    String tag = "Ap2";
-    public void trade(TipModel tipModel) throws IOException, KiteException {
-        log.info("instrument" +tipModel.getInstrument().toString() );
-//        create a CallTrade object
-//        send it to tradeExecutor service
-        KiteConnect kiteSdk = kiteService.connectToKite();
-        KiteTicker tickerProvider = new KiteTicker(kiteSdk.getAccessToken(), kiteSdk.getApiKey());
-        InstrumentWrapper instr = instrumentService.findInstrumentWithEarliestExpiry(tipModel.getInstrument());
-        ArrayList<Long> tokens = new ArrayList<>();
-        tokens.add((instr.getInstrument_token()));
-        Map<String, LTPQuote> quoteMap = kiteSdk.getLTP(new String[]{String.valueOf(instr.getInstrument_token())});
-        var quote = quoteMap.get(String.valueOf(instr.getInstrument_token()));
-        float balance = Float.parseFloat(kiteSdk.getMargins(Constants.INSTRUMENTS_SEGMENTS_EQUITY).available.liveBalance);
+import static com.nextjedi.trading.tipbasedtrading.models.Constants.USER_ID;
 
-//        todo: if balance is available
-        if(balance < quote.lastPrice* instr.getLot_size()){
-            log.warn("Balance not available");
+@Data
+public class KiteService {
+    private KiteTicker kiteTicker;
+    private KiteConnect kiteConnect;
+
+    @Autowired
+    private TokenService tokenService;
+    public KiteConnect connectToKite(){
+        var secret = ApiSecret.apiKeys.get(USER_ID);
+        TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
+        com.zerodhatech.kiteconnect.KiteConnect kiteSdk = new com.zerodhatech.kiteconnect.KiteConnect(secret.getApiKey());
+        kiteSdk.setAccessToken(tokenAccess.getAccessToken());
+        kiteSdk.setPublicToken(tokenAccess.getPublicToken());
+        return kiteSdk;
+    }
+    public KiteTicker getKiteTicker(KiteConnect kiteConnect){
+        return new KiteTicker(kiteConnect.getAccessToken(), kiteConnect.getApiKey());
+    }
+    public void establishTickConnection(){
+        if(Objects.nonNull(kiteConnect) && Objects.nonNull(kiteTicker) && kiteTicker.isConnectionOpen()){
             return;
         }
-        log.info("Instruments found and balance available");
-
-        tickerProvider.setOnConnectedListener(new OnConnect() {
+        kiteConnect = connectToKite();
+        kiteTicker = getKiteTicker(kiteConnect);
+    }
+    private boolean isProperlyConnected(){
+        if (Objects.nonNull(kiteConnect) && Objects.nonNull(kiteTicker)){
+//            todo check if connection exists
+            return true;
+        }
+        return false;
+    }
+    private void start(){
+        kiteTicker.setOnConnectedListener(new OnConnect() {
             @Override
             public void onConnected() {
                 /** Subscribe ticks for token.
                  * By default, all tokens are subscribed for modeQuote.
                  * */
                 log.info("Kite connection established");
-                OrderParams orderParams = OrderParamUtil.createBuyOrder(instr, tipModel.getPrice(),balance, Constants.ORDER_TYPE_MARKET,tag);
-
-                try {
-                    log.info("placing buy order"+orderParams.product+" "+orderParams.price);
-                    buyOrder = kiteSdk.placeOrder(orderParams, Constants.VARIETY_REGULAR);
-                } catch (KiteException | IOException e) {
-                    log.error(e.getMessage());
-                    throw new RuntimeException(e);
-                }
             }
         });
-        tickerProvider.setOnOrderUpdateListener(new OnOrderUpdate() {
+        kiteTicker.setOnOrderUpdateListener(new OnOrderUpdate() {
             @Override
             public void onOrderUpdate(Order order) {
                 log.info("order update "+order.orderId);
@@ -112,14 +111,14 @@ public class TipBasedTradingService {
             }
         });
 
-        tickerProvider.setOnDisconnectedListener(() -> {
+        kiteTicker.setOnDisconnectedListener(() -> {
             try {
                 log.info(kiteSdk.getMargins().toString());
                 tickerProvider.unsubscribe(tokens);
             } catch (KiteException | IOException e) {
                 throw new RuntimeException(e);}
         });
-        tickerProvider.setOnTickerArrivalListener(new OnTicks() {
+        kiteTicker.setOnTickerArrivalListener(new OnTicks() {
             @Override
             public void onTicks(ArrayList<Tick> ticks) {
                 log.info("ticks size ", ticks.size());
@@ -156,8 +155,8 @@ public class TipBasedTradingService {
                 }
             }
         });
-        tickerProvider.connect();
     }
 
+//    todo token automation selenium
 
 }
