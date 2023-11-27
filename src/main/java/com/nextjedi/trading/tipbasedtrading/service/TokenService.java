@@ -2,10 +2,8 @@ package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.exception.TokenNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
-import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
-import com.nextjedi.trading.tipbasedtrading.models.Constants;
+import com.nextjedi.trading.tipbasedtrading.util.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
-import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
@@ -61,7 +59,7 @@ public class TokenService {
         return getLatestTokenByUserId(userId,false);
     }
     public TokenAccess getLatestTokenByUserId(String userId,boolean forceRefresh){
-        log.info("inside get token service method");
+        log.info("inside getLatestTokenByUserId service method");
         try {
             if(forceRefresh){
                 log.info("Refresh the token without checking");

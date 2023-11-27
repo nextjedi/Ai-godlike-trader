@@ -19,10 +19,8 @@ public class TokenAccess {
     @Column(name = "id", nullable = false)
     private Long id;
     private String userId;
-
     private String publicToken;
     private String accessToken;
-//todo: add date for token and get only the latest token
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

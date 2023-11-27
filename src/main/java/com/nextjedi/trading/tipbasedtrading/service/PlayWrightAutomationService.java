@@ -23,6 +23,7 @@ public class PlayWrightAutomationService {
         var totp = totpGenerator.generateCurrent(totpSecret);
         try (Playwright playwright = Playwright.create()) {
             var options = new BrowserType.LaunchOptions();
+            options.setHeadless(false);
             Browser browser = playwright.chromium().launch();
             Page page = browser.newPage();
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");

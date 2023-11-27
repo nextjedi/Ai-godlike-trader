@@ -1,7 +1,7 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.models.Call;
-import com.nextjedi.trading.tipbasedtrading.models.TipModel;
+import com.nextjedi.trading.tipbasedtrading.models.TradeModel;
+import com.nextjedi.trading.tipbasedtrading.models.TradeStatus;
 import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.nextjedi.trading.tipbasedtrading.util.OrderParamUtil;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
@@ -10,59 +10,61 @@ import com.zerodhatech.models.Order;
 import com.zerodhatech.models.OrderParams;
 import com.zerodhatech.models.Tick;
 import com.zerodhatech.ticker.KiteTicker;
-import com.zerodhatech.ticker.OnConnect;
-import com.zerodhatech.ticker.OnOrderUpdate;
-import com.zerodhatech.ticker.OnTicks;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.nextjedi.trading.tipbasedtrading.util.Constants.TAG;
+import static com.zerodhatech.kiteconnect.utils.Constants.*;
 
 @Service
 @Slf4j
 public class TradeExecutorService {
-//    todo define the approach
-//    methods my code needs to call
-//    place order
-//    add instrument to ticker list
-//    remove instrument from ticker list
-//    todo events that need to be handled
-//    on connected
-//    on order update
-//    on disconnect
-//    on tick
-//    get/update the trade object
-//    todo things scheduler need to do
-//    connect
-//    disconnect
-//    update instrument
-//    https://stackoverflow.com/questions/28304384/how-to-correctly-implement-a-spring-websocket-java-client
     @Autowired
-    private KiteService kiteService;
-    @Autowired
-    private CallService callService;
-    private List<Call> calls =new ArrayList<>();
-    public void init(){
-//        todo schedule
-        kiteService.establishTickConnection();
-//        get all relevant calls from db
-        calls = callService.getAllActiveCalls();
+    private TradeModelService tradeModelService;
+
+    @Async
+    public void handleOrderUpdate(Order order) {
+        log.info("handle Order Update");
+//        todo fetch the relevant order
+        if (order.tag.equals(TAG)) {
+            switch (order.status){
+                case ORDER_COMPLETE -> log.info("buy order complete");
+                case ORDER_OPEN -> log.info("buy order open");
+                case ORDER_REJECTED -> log.info("buy order Rejected");
+                case ORDER_CANCELLED -> log.info("order canceled");
+                case ORDER_LAPSED -> log.info("order lapsed");
+                case ORDER_TRIGGER_PENDING -> log.info("trigger pending");
+            }
+
+        }
     }
 
-//    todo add a new call
-//    add to the list
-//    save in db
-//    subscribe and place orders
-    public void newCall(TipModel tip){
-        calls.add(new Call(tip));
+    @Async
+    public void onTickHandler(Tick tick) {
+        log.info("onTickHandler");
+        log.info(String.valueOf(tick.getLastTradedPrice()));
+//        todo fetch all the tradeModels
+//        todo check if current tick belongs to any trade model
+//        todo if empty unsubscribe
+//        todo if status is open then check for trigger and place order
+//        todo if status is entered then handle trail and update order
+//        todo if status is closed then unsubscribe
+        var trades =tradeModelService.getAllTrades();
+        var tradeOptional = trades.stream().filter(tradeModel -> tradeModel.getInstrument().getInstrument_token() == tick.getInstrumentToken()).findFirst();
+        if(tradeOptional.isEmpty()){
+//            todo unsubscribe
+        }
+        var trade = tradeOptional.get();
+        switch (trade.getTradeStatus()) {
+            case NEW -> log.info("new order");
+            case ENTERED -> log.info("order already placed, trailing");
+            case COMPLETED -> log.info("order is completed, unsubscribe");
+            default -> log.info("weird status");
+        }
     }
-
-//    todo trade a new call
-//    analyze call -> check price and current price, check balance that can be allocated,
-
-
-
 }

@@ -1,6 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.controller;
 
-import com.nextjedi.trading.tipbasedtrading.models.TipModel;
+import com.nextjedi.trading.tipbasedtrading.models.TipModelRequest;
 import com.nextjedi.trading.tipbasedtrading.service.TipBasedTradingService;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +20,10 @@ public class TipController {
     TipBasedTradingService tipBasedTradingService;
 
     @PostMapping
-    public void trade(@RequestBody TipModel tipModel){
+    public void trade(@RequestBody TipModelRequest tipModelRequest){
         try {
             log.info("tip controller");
-            tipBasedTradingService.trade(tipModel);
+            tipBasedTradingService.trade(tipModelRequest);
         } catch (IOException e) {
             log.error("IO exception"+e.getMessage());
             throw new RuntimeException(e);

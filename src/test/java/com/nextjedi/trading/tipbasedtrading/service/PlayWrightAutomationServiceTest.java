@@ -1,10 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
-import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
-import com.nextjedi.trading.tipbasedtrading.models.Constants;
-import com.zerodhatech.kiteconnect.KiteConnect;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

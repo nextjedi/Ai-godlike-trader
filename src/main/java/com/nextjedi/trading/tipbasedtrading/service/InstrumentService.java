@@ -2,7 +2,7 @@ package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.exception.InstrumentNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
-import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
+import com.nextjedi.trading.tipbasedtrading.util.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
@@ -17,9 +17,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-import static com.nextjedi.trading.tipbasedtrading.models.Constants.*;
+import static com.nextjedi.trading.tipbasedtrading.util.Constants.*;
 
 @Service
 @Slf4j
@@ -30,6 +29,7 @@ public class InstrumentService {
     @Autowired
     InstrumentRepository instrumentRepository;
     public KiteConnect connectToKite(){
+//        todo remove this piece of code
         var secret =ApiSecret.apiKeys.get(USER_ID);
         TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
         KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
