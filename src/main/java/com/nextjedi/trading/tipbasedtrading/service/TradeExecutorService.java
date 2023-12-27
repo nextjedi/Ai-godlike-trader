@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import static com.nextjedi.trading.tipbasedtrading.util.Constants.TAG;
 import static com.zerodhatech.kiteconnect.utils.Constants.*;
@@ -34,9 +35,18 @@ public class TradeExecutorService {
         if (order.tag.equals(TAG)) {
             switch (order.status){
                 case ORDER_COMPLETE -> log.info("buy order complete");
-                case ORDER_OPEN -> log.info("buy order open");
-                case ORDER_REJECTED -> log.info("buy order Rejected");
-                case ORDER_CANCELLED -> log.info("order canceled");
+                case ORDER_OPEN -> {
+                    log.info("buy order open");
+//                    todo
+//                    todo once entry order is place exit/stop loss order
+                }
+                case ORDER_REJECTED -> {
+                    log.error("buy order Rejected");
+//                   todo lof the  error
+                }
+                case ORDER_CANCELLED -> {
+                    log.info("order canceled");
+                }
                 case ORDER_LAPSED -> log.info("order lapsed");
                 case ORDER_TRIGGER_PENDING -> log.info("trigger pending");
             }
@@ -47,24 +57,41 @@ public class TradeExecutorService {
     @Async
     public void onTickHandler(Tick tick) {
         log.info("onTickHandler");
-        log.info(String.valueOf(tick.getLastTradedPrice()));
-//        todo fetch all the tradeModels
-//        todo check if current tick belongs to any trade model
+        log.info("tick details {} - {}",tick.getInstrumentToken(),tick.getLastTradedPrice());
+//        todo fetch relevant tradeModel
+        var trade =tradeModelService.getOrderByInstrumentToken(tick.getInstrumentToken());
+        if(Objects.isNull(trade)){
+            log.warn("no relevant order for current tick {}",tick.getInstrumentToken());
+//            todo unsubscribe
+            return;
+        }
 //        todo if empty unsubscribe
 //        todo if status is open then check for trigger and place order
 //        todo if status is entered then handle trail and update order
 //        todo if status is closed then unsubscribe
-        var trades =tradeModelService.getAllTrades();
-        var tradeOptional = trades.stream().filter(tradeModel -> tradeModel.getInstrument().getInstrument_token() == tick.getInstrumentToken()).findFirst();
-        if(tradeOptional.isEmpty()){
-//            todo unsubscribe
-        }
-        var trade = tradeOptional.get();
+
         switch (trade.getTradeStatus()) {
-            case NEW -> log.info("new order");
-            case ENTERED -> log.info("order already placed, trailing");
-            case COMPLETED -> log.info("order is completed, unsubscribe");
+            case NEW -> {
+                log.info("new order");
+                enterTrade(trade,tick);
+            }
+            case ENTERED -> {
+                log.info("order already placed, trailing");
+                modifyTrade(trade,tick);
+            }
+            case COMPLETED -> {
+                log.info("order is completed, unsubscribe");
+//                unsubscribe and check for any related open order or position
+            }
             default -> log.info("weird status");
         }
+    }
+    @Async
+    private void enterTrade(TradeModel tradeModel,Tick tick){
+//        todo
+    }
+    @Async
+    private void modifyTrade(TradeModel tradeModel,Tick tick){
+//        todo
     }
 }

@@ -24,6 +24,7 @@ public class TradeModel {
 //    entry means buy
     private double priceWhenTipIsReceived;
     private TradeStatus tradeStatus;
+    private boolean isEngaged;
 
     public TradeModel(InstrumentWrapper instr, int price, double lastPrice) {
         instrument = instr;

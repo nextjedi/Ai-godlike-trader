@@ -27,7 +27,12 @@ public class KiteService {
     @Autowired
     private ZerodhaConnectService zerodhaConnectService;
     public void subscribe(Long token){
+        log.info("subscribe to {}",token);
         var kiteTicker = zerodhaConnectService.getKiteTicker();
+        if(!kiteTicker.isConnectionOpen()){
+            log.error("connection not open");
+//            todo throw exception
+        }
         var tokens = new ArrayList<Long>();
         tokens.add(token);
         kiteTicker.subscribe(tokens);
