@@ -24,6 +24,7 @@ public class ZerodhaConnectService {
     private KiteTicker kiteTicker;
     private KiteConnect kiteConnect;
     public void connectToKite(){
+        log.info("inside connect to kite method");
         var secret = ApiSecret.apiKeys.get(USER_ID);
         TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
         if(Objects.isNull(kiteConnect)){
@@ -33,6 +34,7 @@ public class ZerodhaConnectService {
         kiteConnect.setPublicToken(tokenAccess.getPublicToken());
     }
     public KiteTicker getKiteTicker(){
+        log.info("inside get kite ticker");
         if(Objects.isNull(kiteConnect)){
 //            if not connected establish connection to the token
             connectToKite();
@@ -44,6 +46,7 @@ public class ZerodhaConnectService {
     }
 //    todo refresh token when required
     public KiteConnect getKiteConnect(){
+        log.info("inside get kite connect");
         if(Objects.isNull(kiteConnect)){
 //            if not connected establish connection to the token
             connectToKite();

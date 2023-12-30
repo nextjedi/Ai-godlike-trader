@@ -5,7 +5,10 @@ import com.zerodhatech.kiteconnect.utils.Constants;
 import com.zerodhatech.models.OrderParams;
 
 public class OrderParamUtil {
-    public static OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper, int price, float balance, String orderType, String tag ){
+    private OrderParamUtil(){
+
+    }
+    public static OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper, double price, double balance, String orderType, String tag ){
         int lotCount = (int) (balance /(price*instrumentWrapper.getLot_size()));
         OrderParams orderParams = new OrderParams();
         orderParams.quantity = instrumentWrapper.getLot_size()*lotCount;
@@ -16,7 +19,7 @@ public class OrderParamUtil {
         orderParams.transactionType = Constants.TRANSACTION_TYPE_BUY;
         orderParams.validity = Constants.VALIDITY_DAY;
         orderParams.price = Double.valueOf(price);
-        orderParams.tag = tag;  //tag is optional and it cannot be more than 8 characters and only alphanumeric is allowed
+        orderParams.tag = tag;  //tag is optional, and it cannot be more than 8 characters and only alphanumeric is allowed
         return orderParams;
     }
 

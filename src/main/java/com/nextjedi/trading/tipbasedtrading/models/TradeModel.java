@@ -1,9 +1,12 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
+import com.zerodhatech.models.Order;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Generated;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -24,11 +27,19 @@ public class TradeModel {
 //    entry means buy
     private double priceWhenTipIsReceived;
     private TradeStatus tradeStatus;
-    private boolean isEngaged;
+    private String tag;
+    private Order entryOrder;
+    private Order exitOrder;
 
-    public TradeModel(InstrumentWrapper instr, int price, double lastPrice) {
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+
+    public TradeModel(InstrumentWrapper instr, TipModelRequest tipModelRequest, double lastPrice) {
         instrument = instr;
-        triggerPrice = price;
+        triggerPrice = tipModelRequest.getPrice();
+        target = tipModelRequest.getTarget();
+        stopLoss = tipModelRequest.getStopLoss();
         priceWhenTipIsReceived = lastPrice;
         this.tradeStatus = TradeStatus.NEW;
     }

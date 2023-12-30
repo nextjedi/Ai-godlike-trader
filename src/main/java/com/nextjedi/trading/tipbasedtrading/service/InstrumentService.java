@@ -2,17 +2,15 @@ package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.exception.InstrumentNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.InstrumentRepository;
-import com.nextjedi.trading.tipbasedtrading.util.ApiSecret;
+import com.nextjedi.trading.tipbasedtrading.service.connecttoexchange.ZerodhaConnectService;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentQuery;
 import com.nextjedi.trading.tipbasedtrading.models.InstrumentWrapper;
-import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.Instrument;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,24 +26,14 @@ import static com.nextjedi.trading.tipbasedtrading.util.Constants.*;
 @Slf4j
 public class InstrumentService {
     @Autowired
-    private TokenService tokenService;
-
-    @Autowired
     InstrumentRepository instrumentRepository;
-    public KiteConnect connectToKite(){
-//        todo remove this piece of code
-        var secret =ApiSecret.apiKeys.get(USER_ID);
-        TokenAccess tokenAccess=tokenService.getLatestTokenByUserId(USER_ID);
-        KiteConnect kiteSdk = new KiteConnect(secret.getApiKey());
-        kiteSdk.setAccessToken(tokenAccess.getAccessToken());
-        kiteSdk.setPublicToken(tokenAccess.getPublicToken());
-        return kiteSdk;
-    }
+    @Autowired
+    ZerodhaConnectService zerodhaConnectService;
 
-        @Scheduled(cron = "0 45 8 * * MON-FRI")
+//        @Scheduled(cron = "0 45 8 * * MON-FRI")
         public boolean insertInstruments(){
         log.info("Updating instruments");
-        KiteConnect kiteSdk = connectToKite();
+        KiteConnect kiteSdk = zerodhaConnectService.getKiteConnect();
         try {
             List<Instrument> instruments = kiteSdk.getInstruments();
             List<InstrumentWrapper> instrumentWrappers
@@ -54,8 +42,8 @@ public class InstrumentService {
                     .map(InstrumentWrapper::new).toList();
             log.info("Instruments fetched {}", instrumentWrappers.size());
             var instrumentsSaved =instrumentRepository.findAll();
-            var insts =instrumentWrappers.stream().filter(instrumentWrapper -> instrumentsSaved.stream().filter(instrumentWrapper1 -> instrumentWrapper.getInstrument_token() == instrumentWrapper1.getInstrument_token()).count() ==0).collect(Collectors.toList());
-            instrumentRepository.saveAll(insts);
+            var instsWrapperList =instrumentWrappers.stream().filter(instrumentWrapper -> instrumentsSaved.stream().filter(instrumentWrapper1 -> instrumentWrapper.getInstrumentToken() == instrumentWrapper1.getInstrumentToken()).count() ==0).collect(Collectors.toList());
+            instrumentRepository.saveAll(instsWrapperList);
             log.info("Instruments updated");
             return true;
 
@@ -77,7 +65,7 @@ public class InstrumentService {
             }
         }catch (Exception e){
             log.error("Instrument not available"+ e.getMessage());
-            log.error("Query"+ instrumentQuery.toString());
+            log.error("need to add this instrument {}", instrumentQuery.getName());
             throw new InstrumentNotFoundException(e.getMessage());
         }
     }

@@ -38,6 +38,7 @@ public class KiteService {
         kiteTicker.subscribe(tokens);
     }
     public void unSubscribe(Long token){
+        log.info("inside unsubscribe method");
         var kiteTicker = zerodhaConnectService.getKiteTicker();
         var tokens = new ArrayList<Long>();
         tokens.add(token);
@@ -61,7 +62,6 @@ public class KiteService {
 
         kiteTicker.setOnDisconnectedListener(() -> {
             log.info("disconnected");
-//            kiteTicker.unsubscribe(tokens);
         });
         kiteTicker.setOnTickerArrivalListener(ticks -> {
             log.info("ticks size {}", ticks.size());
@@ -75,7 +75,6 @@ public class KiteService {
             kiteTicker.connect();
         }
     }
-//    todo update instrument daily
     @Scheduled(cron = "0 16 16 * * MON-FRI")
     private void endConnection(){
         log.info("disconnect method");

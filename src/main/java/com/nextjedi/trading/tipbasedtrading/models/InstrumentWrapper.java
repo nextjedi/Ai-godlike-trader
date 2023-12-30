@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class InstrumentWrapper {
     @Id
-    public long instrument_token;
+    public long instrumentToken;
     public long exchange_token;
     public String tradingSymbol;
     public String name;
@@ -28,7 +28,7 @@ public class InstrumentWrapper {
     public Date expiry;
 
     public InstrumentWrapper(com.zerodhatech.models.Instrument instrument) {
-        instrument_token = instrument.getInstrument_token();
+        instrumentToken = instrument.getInstrument_token();
         exchange_token = instrument.getExchange_token();
         tradingSymbol = instrument.getTradingsymbol();
         name = instrument.getName();

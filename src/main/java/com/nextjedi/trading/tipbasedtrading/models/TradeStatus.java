@@ -1,5 +1,5 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
 public enum TradeStatus {
-    NEW,ENTERED,PENDING,COMPLETED,MISSED,ACTIVE
+    NEW,ENTERED,COMPLETED,MISSED,ABORTED,BUSY
 }

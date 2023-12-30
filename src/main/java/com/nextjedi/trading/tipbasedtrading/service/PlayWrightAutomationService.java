@@ -24,7 +24,7 @@ public class PlayWrightAutomationService {
         try (Playwright playwright = Playwright.create()) {
             var options = new BrowserType.LaunchOptions();
             options.setHeadless(false);
-            Browser browser = playwright.chromium().launch();
+            Browser browser = playwright.chromium().launch(options);
             Page page = browser.newPage();
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");
             page.locator("#userid").fill(userId);
