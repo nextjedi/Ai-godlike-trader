@@ -32,10 +32,8 @@ public class TradeExecutorService {
     private TradeModelService tradeModelService;
     @Autowired
     private ZerodhaConnectService zerodhaConnectService;
-
-    @Async
     public void handleOrderUpdate(Order order) {
-        log.info("handle Order Update {}",order);
+        log.info("handle Order Update {}",order.toString());
         log.info(order.status);
 //        todo fetch the relevant trade
         if (order.tag.equals(TAG)) {
@@ -48,8 +46,13 @@ public class TradeExecutorService {
                     log.info("buy order open");
                 }
                 case ORDER_REJECTED -> {
-                    log.error("buy order Rejected");
-                    log.error(order.statusMessage);
+                    if(order.transactionType.equalsIgnoreCase(TRANSACTION_TYPE_BUY)){
+                        log.error("buy order Rejected");
+                        log.error(order.statusMessage);
+                    }else {
+                        log.error("sell order rejected");
+                        handleSellOrderRejected(order);
+                    }
                 }
                 case ORDER_CANCELLED -> {
                     log.info("order canceled");
@@ -61,13 +64,19 @@ public class TradeExecutorService {
 
         }
     }
-    @Async
+
+    private void handleSellOrderRejected(Order order) {
+//        todo fetch the trade
+//        todo check for open position
+//        todo update status
+    }
     private void handleOrderCompleted(Order order){
 //        todo fetch trade by order id
+        tradeModelService.getOrderByInstrumentToken(order.)
         switch (order.transactionType){
             case TRANSACTION_TYPE_BUY -> {
 //                todo place stop loss order
-//                todo update trade status if needed
+//                todo update trade status
             }
             case TRANSACTION_TYPE_SELL -> {
 //                todo verify open positions etc
@@ -84,6 +93,7 @@ public class TradeExecutorService {
         var trade =tradeModelService.getOrderByInstrumentToken(tick.getInstrumentToken());
         if(Objects.isNull(trade)){
             log.warn("no relevant order for current tick {}",tick.getInstrumentToken());
+//            todo handle unsubscribe
             return;
         }
         switch (trade.getTradeStatus()) {
@@ -102,7 +112,6 @@ public class TradeExecutorService {
             default -> log.info("weird status");
         }
     }
-    @Async
     public void enterTrade(TradeModel tradeModel,Tick tick){
         if(tick.getLastTradedPrice()<tradeModel.getTriggerPrice()*0.95){
             log.info("still less than trigger price: {} :: {}",tradeModel.getTarget(),tick.getLastTradedPrice());
@@ -118,9 +127,8 @@ public class TradeExecutorService {
             tradeModel.setTradeStatus(TradeStatus.BUSY);
             tradeModel.setEntryOrder(order);
             tradeModelService.updateTrade(tradeModel);
-        } catch (KiteException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (KiteException | IOException e) {
+            log.error("something went wrong {}",e.getMessage());
             throw new RuntimeException(e);
         }
     }

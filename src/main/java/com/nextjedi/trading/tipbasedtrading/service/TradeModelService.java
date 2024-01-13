@@ -22,12 +22,17 @@ public class TradeModelService {
         return true;
     }
     public List<TradeModel> getAllActiveTrades(){
+//        todo not in multiple statuses
         return tradeModelRepository.findTradeStatusNot(TradeStatus.COMPLETED);
     }
     public ArrayList<Long> getAllTokens(){
         var trades = getAllActiveTrades();
         var tokens = trades.stream().map(tradeModel -> tradeModel.getInstrument().getInstrumentToken()).distinct().toList();
         return new ArrayList<>(tokens);
+    }
+    public TradeModel getOrderByInstrumentToken(Long token){
+        var res =tradeModelRepository.findTopByInstrument_InstrumentTokenAndTradeStatusNot(token,TradeStatus.COMPLETED);
+        return res.orElseGet(null);
     }
     public TradeModel getOrderByInstrumentToken(Long token){
         var res =tradeModelRepository.findTopByInstrument_InstrumentTokenAndTradeStatusNot(token,TradeStatus.COMPLETED);
