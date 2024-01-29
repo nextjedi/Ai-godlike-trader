@@ -1,6 +1,5 @@
 package com.nextjedi.trading.tipbasedtrading.models;
 
-import com.zerodhatech.models.Order;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

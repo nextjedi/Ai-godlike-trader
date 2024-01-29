@@ -16,13 +16,6 @@ public class OrderDetail {
     String transactionType;
     @Id
     private Long id;
-
-    public OrderDetail(int orderId, int quantity, double price, String transactionType) {
-        this.orderId = orderId;
-        this.quantity = quantity;
-        this.price = price;
-        this.transactionType = transactionType;
-    }
     public OrderDetail(Order order) {
         this.orderId = Integer.parseInt(order.orderId);
         this.quantity = Integer.parseInt(order.quantity);

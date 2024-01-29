@@ -11,15 +11,12 @@ import com.zerodhatech.kiteconnect.utils.Constants;
 import com.zerodhatech.models.Order;
 import com.zerodhatech.models.OrderParams;
 import com.zerodhatech.models.Tick;
-import com.zerodhatech.ticker.KiteTicker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static com.nextjedi.trading.tipbasedtrading.util.Constants.MAXIMUM_VALUE_PER_TRADE;
@@ -43,9 +40,7 @@ public class TradeExecutorService {
                     log.info("buy order complete");
                     handleOrderCompleted(order);
                 }
-                case ORDER_OPEN -> {
-                    log.info("buy order open");
-                }
+                case ORDER_OPEN -> log.info("buy order open");
                 case ORDER_REJECTED -> {
                     if(order.transactionType.equalsIgnoreCase(TRANSACTION_TYPE_BUY)){
                         log.error("buy order Rejected");
@@ -61,6 +56,7 @@ public class TradeExecutorService {
                 }
                 case ORDER_LAPSED -> log.info("order lapsed");
                 case ORDER_TRIGGER_PENDING -> log.info("trigger pending");
+                default -> throw new IllegalStateException("Unexpected value: " + order.status);
             }
 
         }
@@ -178,7 +174,7 @@ public class TradeExecutorService {
                 price =Helper.tickMultiple(price,instr.tick_size);
                 trigger =Helper.tickMultiple(trigger,instr.tick_size);
                 OrderParams orderP = OrderParamUtil.createSellOrder(instr, price, trigger, order.getQuantity(),tradeModel.getTag());
-                var sellOrder =kite.modifyOrder(String.valueOf(order.getOrderId()),orderP,Constants.VARIETY_REGULAR);
+                var sellOrder =kite.modifyOrder(String.valueOf(order.getOrderId()),orderP, VARIETY_REGULAR);
                 tradeModel.setExitOrder(new OrderDetail(sellOrder));
                 tradeModelService.updateTrade(tradeModel);
             } catch (KiteException | IOException e) {

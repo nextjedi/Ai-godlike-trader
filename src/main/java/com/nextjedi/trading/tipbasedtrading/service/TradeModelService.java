@@ -37,11 +37,11 @@ public class TradeModelService {
     }
     public Optional<TradeModel> getOrderByEntryOrder(int entryOrder){
         log.info("getOrderByEntryOrder service method");
-        return tradeModelRepository.findTopByEntryOrder(entryOrder);
+        return tradeModelRepository.findTopByEntryOrder_OrderId(entryOrder);
     }
     public Optional<TradeModel> getOrderByExitOrder(int exitOrder){
         log.info("getOrderByExitOrder service method");
-        return tradeModelRepository.findTopByExitOrder(exitOrder);
+        return tradeModelRepository.findTopByExitOrder_OrderId(exitOrder);
     }
     public void updateTrade(TradeModel tradeModel){
         tradeModelRepository.save(tradeModel);

@@ -3,12 +3,10 @@ package com.nextjedi.trading.tipbasedtrading.service;
 import com.atlassian.onetime.core.TOTPGenerator;
 import com.atlassian.onetime.model.TOTPSecret;
 import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
 import java.util.regex.Pattern;
