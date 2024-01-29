@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TradeModelRepository extends JpaRepository<TradeModel, Long>{
-    public List<TradeModel> findTradeStatusNot(TradeStatus tradeStatus);
+    public List<TradeModel> findByTradeStatusNot(TradeStatus tradeStatus);
     public Optional<TradeModel> findTopByInstrument_InstrumentTokenAndTradeStatusNot(Long instrumentToken,TradeStatus tradeStatus);
-    public Optional<TradeModel> findTopByInstrument_InstrumentTokenAndTradeStatusNot(Long instrumentToken,TradeStatus tradeStatus);
+//    public Optional<TradeModel> findTopByInstrument_InstrumentTokenAndTradeStatusNot(Long instrumentToken,TradeStatus tradeStatus);
+    public Optional<TradeModel> findTopByEntryOrder(int entryOrder);
+    public Optional<TradeModel> findTopByExitOrder(int exitOrder);
 
 }

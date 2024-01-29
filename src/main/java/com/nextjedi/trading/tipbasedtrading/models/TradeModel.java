@@ -18,7 +18,7 @@ public class TradeModel {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "instrument_instrument_token")
+    @JoinColumn(name = "instrument_instrumentToken")
     private InstrumentWrapper instrument;
     private double triggerPrice;
     private double stopLoss;
@@ -28,8 +28,10 @@ public class TradeModel {
     private double priceWhenTipIsReceived;
     private TradeStatus tradeStatus;
     private String tag;
-    private Order entryOrder;
-    private Order exitOrder;
+    @OneToOne(cascade = CascadeType.ALL)
+    private OrderDetail entryOrder;
+    @OneToOne(cascade = CascadeType.ALL)
+    private OrderDetail exitOrder;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

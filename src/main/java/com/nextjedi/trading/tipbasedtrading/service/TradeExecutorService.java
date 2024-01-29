@@ -1,5 +1,6 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
+import com.nextjedi.trading.tipbasedtrading.models.OrderDetail;
 import com.nextjedi.trading.tipbasedtrading.models.TradeModel;
 import com.nextjedi.trading.tipbasedtrading.models.TradeStatus;
 import com.nextjedi.trading.tipbasedtrading.service.connecttoexchange.ZerodhaConnectService;
@@ -71,17 +72,43 @@ public class TradeExecutorService {
 //        todo update status
     }
     private void handleOrderCompleted(Order order){
-//        todo fetch trade by order id
-        tradeModelService.getOrderByInstrumentToken(order.)
         switch (order.transactionType){
             case TRANSACTION_TYPE_BUY -> {
-//                todo place stop loss order
-//                todo update trade status
+                var trade = tradeModelService.getOrderByEntryOrder(Integer.parseInt(order.orderId));
+                if(trade.isPresent()){
+                    log.info("buy order completed");
+                    trade.get().setTradeStatus(TradeStatus.ENTERED);
+                    var instr = trade.get().getInstrument();
+                    tradeModelService.updateTrade(trade.get());
+                    double price = Double.parseDouble(order.averagePrice)*0.85;
+                    double trigger = Double.parseDouble(order.averagePrice)*0.87;
+                    price = Helper.tickMultiple(price, instr.tick_size);
+                    trigger =Helper.tickMultiple(trigger, instr.tick_size);
+                    var orderParam = OrderParamUtil.createSellOrder(
+                            trade.get().getInstrument(),price,trigger,trade.get().getInstrument().getLot_size(),TAG);
+                    log.info("order param {}", orderParam);
+                    try {
+                        var kite = zerodhaConnectService.getKiteConnect();
+                        var orderRes = kite.placeOrder(orderParam,VARIETY_REGULAR);
+                        trade.get().setExitOrder(new OrderDetail(orderRes));
+                        tradeModelService.updateTrade(trade.get());
+                    } catch (KiteException | IOException e) {
+                        log.error("something went wrong {}",e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                }else {
+                    log.error("no trade found for this order");
+                }
             }
             case TRANSACTION_TYPE_SELL -> {
-//                todo verify open positions etc
-//                todo update trade status
-//                todo unsubscribe
+                var trade = tradeModelService.getOrderByExitOrder(Integer.parseInt(order.orderId));
+                if(trade.isPresent()){
+                    log.info("sell order completed");
+                    trade.get().setTradeStatus(TradeStatus.COMPLETED);
+                    tradeModelService.updateTrade(trade.get());
+                }else {
+                    log.error("no trade found for this order");
+                }
             }
         }
     }
@@ -117,15 +144,18 @@ public class TradeExecutorService {
             log.info("still less than trigger price: {} :: {}",tradeModel.getTarget(),tick.getLastTradedPrice());
             return;
         }
-//        todo check for open order for this instrument
         try {
             var kite = zerodhaConnectService.getKiteConnect();
             var margin = kite.getMargins(EXCHANGE_NFO);
             var bal = Math.min(Double.parseDouble(margin.available.cash),MAXIMUM_VALUE_PER_TRADE);
             var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,TRANSACTION_TYPE_BUY,tradeModel.getTag());
+            if(Objects.isNull(orderParam)){
+                log.error("order param is null, not enough balance");
+                return;
+            }
             var order =kite.placeOrder(orderParam,VARIETY_REGULAR);
             tradeModel.setTradeStatus(TradeStatus.BUSY);
-            tradeModel.setEntryOrder(order);
+            tradeModel.setEntryOrder(new OrderDetail(order));
             tradeModelService.updateTrade(tradeModel);
         } catch (KiteException | IOException e) {
             log.error("something went wrong {}",e.getMessage());
@@ -134,16 +164,29 @@ public class TradeExecutorService {
     }
     @Async
     public void modifyTrade(TradeModel tradeModel,Tick tick){
-//        todo
-//        todo fetch order id
+        log.info("modifyTrade");
         var order =tradeModel.getExitOrder();
-        var kite = zerodhaConnectService.getKiteConnect();
-        try {
-            var orders =kite.getOrderHistory(order.orderId);
-        } catch (KiteException | IOException e) {
-            throw new RuntimeException(e);
+        var movement = tick.getLastTradedPrice() - order.getPrice();
+        var movementPercent =movement*100/order.getPrice();
+        if(movement >2 && movementPercent >4){
+            log.info("movement is more than 2 or 4%, modifying order");
+            var instr = tradeModel.getInstrument();
+            var kite = zerodhaConnectService.getKiteConnect();
+            try {
+                double price = tick.getLastTradedPrice() -(movement*0.5);
+                double trigger = tick.getLastTradedPrice() -(movement*0.4);
+                price =Helper.tickMultiple(price,instr.tick_size);
+                trigger =Helper.tickMultiple(trigger,instr.tick_size);
+                OrderParams orderP = OrderParamUtil.createSellOrder(instr, price, trigger, order.getQuantity(),tradeModel.getTag());
+                var sellOrder =kite.modifyOrder(String.valueOf(order.getOrderId()),orderP,Constants.VARIETY_REGULAR);
+                tradeModel.setExitOrder(new OrderDetail(sellOrder));
+                tradeModelService.updateTrade(tradeModel);
+            } catch (KiteException | IOException e) {
+                log.error("something went wrong {}",e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }else {
+            log.info("movement is less than 2 or 4%, order not modified");
         }
-//        todo fetch order details
-//        todo update order based on condition
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -17,13 +17,14 @@ public class TradeModelService {
     @Autowired
     private TradeModelRepository tradeModelRepository;
     public boolean registerNewTrade(TradeModel tradeModel){
+//        todo check if trade already exists
         log.info("registerNewTrade service method");
         tradeModelRepository.save(tradeModel);
         return true;
     }
     public List<TradeModel> getAllActiveTrades(){
 //        todo not in multiple statuses
-        return tradeModelRepository.findTradeStatusNot(TradeStatus.COMPLETED);
+        return tradeModelRepository.findByTradeStatusNot(TradeStatus.COMPLETED);
     }
     public ArrayList<Long> getAllTokens(){
         var trades = getAllActiveTrades();
@@ -34,9 +35,13 @@ public class TradeModelService {
         var res =tradeModelRepository.findTopByInstrument_InstrumentTokenAndTradeStatusNot(token,TradeStatus.COMPLETED);
         return res.orElseGet(null);
     }
-    public TradeModel getOrderByInstrumentToken(Long token){
-        var res =tradeModelRepository.findTopByInstrument_InstrumentTokenAndTradeStatusNot(token,TradeStatus.COMPLETED);
-        return res.orElseGet(null);
+    public Optional<TradeModel> getOrderByEntryOrder(int entryOrder){
+        log.info("getOrderByEntryOrder service method");
+        return tradeModelRepository.findTopByEntryOrder(entryOrder);
+    }
+    public Optional<TradeModel> getOrderByExitOrder(int exitOrder){
+        log.info("getOrderByExitOrder service method");
+        return tradeModelRepository.findTopByExitOrder(exitOrder);
     }
     public void updateTrade(TradeModel tradeModel){
         tradeModelRepository.save(tradeModel);

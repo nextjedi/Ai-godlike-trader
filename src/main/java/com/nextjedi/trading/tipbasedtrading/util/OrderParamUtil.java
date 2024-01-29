@@ -10,6 +10,9 @@ public class OrderParamUtil {
     }
     public static OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper, double price, double balance, String orderType, String tag ){
         int lotCount = (int) (balance /(price*instrumentWrapper.getLot_size()));
+        if(lotCount == 0){
+            return null;
+        }
         OrderParams orderParams = new OrderParams();
         orderParams.quantity = instrumentWrapper.getLot_size()*lotCount;
         orderParams.orderType = orderType;
@@ -18,7 +21,7 @@ public class OrderParamUtil {
         orderParams.exchange = Constants.EXCHANGE_NFO;
         orderParams.transactionType = Constants.TRANSACTION_TYPE_BUY;
         orderParams.validity = Constants.VALIDITY_DAY;
-        orderParams.price = Double.valueOf(price);
+        orderParams.price = price;
         orderParams.tag = tag;  //tag is optional, and it cannot be more than 8 characters and only alphanumeric is allowed
         return orderParams;
     }

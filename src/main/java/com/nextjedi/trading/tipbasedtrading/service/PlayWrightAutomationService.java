@@ -20,11 +20,8 @@ public class PlayWrightAutomationService {
                                String password,String totpKey){
         TOTPSecret totpSecret = TOTPSecret.Companion.fromBase32EncodedString(totpKey);
         TOTPGenerator totpGenerator = new TOTPGenerator();
-        var totp = totpGenerator.generateCurrent(totpSecret);
         try (Playwright playwright = Playwright.create()) {
-            var options = new BrowserType.LaunchOptions();
-            options.setHeadless(false);
-            Browser browser = playwright.chromium().launch(options);
+            Browser browser = playwright.chromium().launch();
             Page page = browser.newPage();
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");
             page.locator("#userid").fill(userId);
@@ -33,6 +30,7 @@ public class PlayWrightAutomationService {
 //            todo more logical time out
             page.waitForTimeout(1000);
 //            todo improve locator
+            var totp = totpGenerator.generateCurrent(totpSecret);
             page.locator("xpath=//*[@id=\"userid\"]").fill(totp.getValue());
             page.waitForURL(Pattern.compile(".*token"));
             log.info(page.url());
