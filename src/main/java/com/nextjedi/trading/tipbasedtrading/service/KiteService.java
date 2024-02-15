@@ -1,6 +1,7 @@
 package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.service.connecttoexchange.ZerodhaConnectService;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,8 @@ public class KiteService {
         tokens.add(token);
         kiteTicker.unsubscribe(tokens);
     }
-    @Scheduled(cron = "0 45 8 * * MON-FRI")
+//    @Scheduled(cron = "0 45 8 * * MON-FRI")
+    @PostConstruct
     private void startConnection(){
         log.info("into the connection setup method");
         var kiteTicker = zerodhaConnectService.getKiteTicker();
@@ -53,6 +55,8 @@ public class KiteService {
              * By default, all tokens are subscribed for modeQuote.
              * */
             log.info("Kite connection established");
+            var instrumentStatus = instrumentService.insertInstruments();
+            log.info("Instrument insertion status {}", instrumentStatus);
             kiteTicker.subscribe(tradeModelService.getAllTokens());
         });
         kiteTicker.setOnOrderUpdateListener(order -> {

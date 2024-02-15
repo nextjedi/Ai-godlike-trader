@@ -31,6 +31,7 @@ public class TradeModel {
     private OrderDetail entryOrder;
     @OneToOne(cascade = CascadeType.ALL)
     private OrderDetail exitOrder;
+    private TradeType tradeType;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -43,5 +44,6 @@ public class TradeModel {
         stopLoss = tipModelRequest.getStopLoss();
         priceWhenTipIsReceived = lastPrice;
         this.tradeStatus = TradeStatus.NEW;
+        tradeType = tipModelRequest.getType();
     }
 }

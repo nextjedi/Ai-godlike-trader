@@ -43,6 +43,7 @@ public class TradeModelService {
         log.info("getOrderByExitOrder service method");
         return tradeModelRepository.findTopByExitOrder_OrderId(exitOrder);
     }
+
     public void updateTrade(TradeModel tradeModel){
         tradeModelRepository.save(tradeModel);
     }

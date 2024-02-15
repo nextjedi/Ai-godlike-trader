@@ -76,9 +76,10 @@ public class InstrumentService {
                     instrumentQuery.getStrike(), instrumentQuery.getName(), instrumentQuery.getInstrumentType(), OPTION_SEGMENT);
             if(!CollectionUtils.isEmpty(instruments)){
                 instruments =instruments.stream().filter(instrumentWrapper -> instrumentWrapper.getExpiry().after(Date.from(Instant.now().minus(1,ChronoUnit.DAYS)))).collect(Collectors.toList());
-                Collections.sort(instruments, Comparator.comparing(InstrumentWrapper::getExpiry));
-                log.info("instrument found "+ instruments.stream().findFirst().get().getName());
-                return instruments.stream().findFirst().get();
+                instruments.sort(Comparator.comparing(InstrumentWrapper::getExpiry));
+
+                log.info("instrument found "+ instruments.get(0).getName());
+                return instruments.get(0);
             }else {
                 throw new InstrumentNotFoundException("Instrument is null");
             }

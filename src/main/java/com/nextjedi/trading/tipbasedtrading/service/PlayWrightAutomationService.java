@@ -3,6 +3,7 @@ package com.nextjedi.trading.tipbasedtrading.service;
 import com.atlassian.onetime.core.TOTPGenerator;
 import com.atlassian.onetime.model.TOTPSecret;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ public class PlayWrightAutomationService {
         TOTPSecret totpSecret = TOTPSecret.Companion.fromBase32EncodedString(totpKey);
         TOTPGenerator totpGenerator = new TOTPGenerator();
         try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.chromium().launch();
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
             Page page = browser.newPage();
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");
             page.locator("#userid").fill(userId);
