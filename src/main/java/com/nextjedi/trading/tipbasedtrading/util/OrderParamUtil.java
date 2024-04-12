@@ -10,6 +10,7 @@ public class OrderParamUtil {
 
     }
     public static OrderParams createBuyOrder(InstrumentWrapper instrumentWrapper, double price, double balance, String orderType, String tag , TradeType type){
+
         int lotCount = (int) (balance /(price*instrumentWrapper.getLot_size()));
         if(lotCount == 0){
             return null;
@@ -18,6 +19,7 @@ public class OrderParamUtil {
         orderParams.quantity = instrumentWrapper.getLot_size()*lotCount;
         orderParams.orderType = orderType;
         orderParams.tradingsymbol = instrumentWrapper.getTradingSymbol();
+
         orderParams.product = getOrderType(type);
         orderParams.exchange = Constants.EXCHANGE_NFO;
         orderParams.transactionType = Constants.TRANSACTION_TYPE_BUY;

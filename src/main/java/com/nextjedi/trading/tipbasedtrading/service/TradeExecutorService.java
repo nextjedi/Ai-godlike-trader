@@ -3,6 +3,7 @@ package com.nextjedi.trading.tipbasedtrading.service;
 import com.nextjedi.trading.tipbasedtrading.models.OrderDetail;
 import com.nextjedi.trading.tipbasedtrading.models.TradeModel;
 import com.nextjedi.trading.tipbasedtrading.models.TradeStatus;
+import com.nextjedi.trading.tipbasedtrading.models.TradeType;
 import com.nextjedi.trading.tipbasedtrading.service.connecttoexchange.ZerodhaConnectService;
 import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.nextjedi.trading.tipbasedtrading.util.OrderParamUtil;
@@ -70,24 +71,31 @@ public class TradeExecutorService {
     private void handleOrderCompleted(Order order){
         switch (order.transactionType){
             case TRANSACTION_TYPE_BUY -> {
-                var trade = tradeModelService.getOrderByEntryOrder(Integer.parseInt(order.orderId));
-                if(trade.isPresent()){
+                var tradeModelOptional = tradeModelService.getOrderByEntryOrder(Integer.parseInt(order.orderId));
+                if(tradeModelOptional.isPresent()){
                     log.info("buy order completed");
-                    trade.get().setTradeStatus(TradeStatus.ENTERED);
-                    var instr = trade.get().getInstrument();
-                    tradeModelService.updateTrade(trade.get());
+                    var trade = tradeModelOptional.get();
+                    if(trade.getType().equals(TradeType.BTST)){
+                        trade.setTradeStatus(TradeStatus.COMPLETED);
+                        tradeModelService.updateTrade(trade);
+                        return;
+                    }else{
+                        trade.setTradeStatus(TradeStatus.ENTERED);
+                    }
+                    var instr = trade.getInstrument();
+                    tradeModelService.updateTrade(trade);
                     double price = Double.parseDouble(order.averagePrice)*0.85;
                     double trigger = Double.parseDouble(order.averagePrice)*0.87;
                     price = Helper.tickMultiple(price, instr.tick_size);
                     trigger =Helper.tickMultiple(trigger, instr.tick_size);
                     var orderParam = OrderParamUtil.createSellOrder(
-                            trade.get().getInstrument(),price,trigger,trade.get().getInstrument().getLot_size(),TAG,trade.get().getType());
+                            trade.getInstrument(),price,trigger,trade.getInstrument().getLot_size(),TAG,trade.getType());
                     log.info("order param {}", orderParam);
                     try {
                         var kite = zerodhaConnectService.getKiteConnect();
                         var orderRes = kite.placeOrder(orderParam,VARIETY_REGULAR);
-                        trade.get().setExitOrder(new OrderDetail(orderRes));
-                        tradeModelService.updateTrade(trade.get());
+                        trade.setExitOrder(new OrderDetail(orderRes));
+                        tradeModelService.updateTrade(trade);
                     } catch (KiteException | IOException e) {
                         log.error("something went wrong {}",e.getMessage());
                         throw new RuntimeException(e);
@@ -136,6 +144,7 @@ public class TradeExecutorService {
         }
     }
     public void enterTrade(TradeModel tradeModel,Tick tick){
+//        todo logic to be improved
         if(tick.getLastTradedPrice()<tradeModel.getTriggerPrice()*0.95){
             log.info("still less than trigger price: {} :: {}",tradeModel.getTriggerPrice(),tick.getLastTradedPrice());
             return;
