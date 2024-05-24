@@ -136,9 +136,10 @@ public class TradeExecutorService {
                 log.info("order already placed, trailing");
                 modifyTrade(trade,tick);
             }
-            case COMPLETED ->
+            case COMPLETED -> {
+                log.info("order is completed, unsubscribe");
 //                todo unsubscribe and check for any related open order or position
-                    log.info("order is completed, unsubscribe");
+            }
             default -> log.info("weird status");
         }
     }
@@ -151,8 +152,8 @@ public class TradeExecutorService {
         try {
             var kite = zerodhaConnectService.getKiteConnect();
             var margin = kite.getMargins(MARGIN_EQUITY);
-            var bal = Math.min(Double.parseDouble(margin.available.intradayPayin),MAXIMUM_VALUE_PER_TRADE);
-            var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,tradeModel.getTag(),tradeModel.getTradeType());
+            var bal = Math.min(Double.parseDouble(margin.available.cash),MAXIMUM_VALUE_PER_TRADE);
+            var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,TRANSACTION_TYPE_BUY,tradeModel.getTag(),tradeModel.getType());
             if(Objects.isNull(orderParam)){
                 log.error("order param is null, not enough balance");
                 return;

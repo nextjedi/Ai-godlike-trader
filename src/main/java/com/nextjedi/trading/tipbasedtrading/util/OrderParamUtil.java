@@ -19,7 +19,6 @@ public class OrderParamUtil {
         orderParams.quantity = instrumentWrapper.getLot_size()*lotCount;
         orderParams.orderType = orderType;
         orderParams.tradingsymbol = instrumentWrapper.getTradingSymbol();
-
         orderParams.product = getOrderType(type);
         orderParams.exchange = Constants.EXCHANGE_NFO;
         orderParams.transactionType = Constants.TRANSACTION_TYPE_BUY;
