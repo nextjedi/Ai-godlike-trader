@@ -16,8 +16,12 @@ import java.util.List;
 @RequestMapping("/token")
 @Slf4j
 public class TokenController {
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
+
+    public TokenController(TokenService tokenService) {
+        this.tokenService = tokenService;
+    }
+
     @GetMapping
     public List<TokenAccess> getTokens(){
         log.info("Into the get token controller");

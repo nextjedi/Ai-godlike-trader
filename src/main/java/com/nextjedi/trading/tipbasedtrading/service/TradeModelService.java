@@ -17,8 +17,12 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class TradeModelService {
-    @Autowired
-    private TradeModelRepository tradeModelRepository;
+    private final TradeModelRepository tradeModelRepository;
+
+    public TradeModelService(TradeModelRepository tradeModelRepository) {
+        this.tradeModelRepository = tradeModelRepository;
+    }
+
     public boolean registerNewTrade(TradeModel tradeModel){
 //        todo check if trade already exists
         log.info("registerNewTrade service method");

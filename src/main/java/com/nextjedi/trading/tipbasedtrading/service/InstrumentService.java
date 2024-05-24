@@ -25,12 +25,17 @@ import static com.nextjedi.trading.tipbasedtrading.util.Constants.*;
 @Service
 @Slf4j
 public class InstrumentService {
-    @Autowired
+    final
     InstrumentRepository instrumentRepository;
-    @Autowired
+    final
     ZerodhaConnectService zerodhaConnectService;
 
-//        @Scheduled(cron = "0 45 8 * * MON-FRI")
+    public InstrumentService(InstrumentRepository instrumentRepository, ZerodhaConnectService zerodhaConnectService) {
+        this.instrumentRepository = instrumentRepository;
+        this.zerodhaConnectService = zerodhaConnectService;
+    }
+
+    //        @Scheduled(cron = "0 45 8 * * MON-FRI")
         public boolean insertInstruments(){
         log.info("Updating instruments");
         KiteConnect kiteSdk = zerodhaConnectService.getKiteConnect();
@@ -42,7 +47,8 @@ public class InstrumentService {
                     .map(InstrumentWrapper::new).toList();
             log.info("Instruments fetched {}", instrumentWrappers.size());
             var instrumentsSaved =instrumentRepository.findAll();
-            var instsWrapperList =instrumentWrappers.stream().filter(instrumentWrapper -> instrumentsSaved.stream().filter(instrumentWrapper1 -> instrumentWrapper.getInstrumentToken() == instrumentWrapper1.getInstrumentToken()).count() ==0).collect(Collectors.toList());
+            var instsWrapperList =instrumentWrappers.stream().
+                    filter(instrumentWrapper -> instrumentsSaved.stream().noneMatch(instrumentWrapper1 -> instrumentWrapper.getInstrumentToken() == instrumentWrapper1.getInstrumentToken())).collect(Collectors.toList());
             instrumentRepository.saveAll(instsWrapperList);
             log.info("Instruments updated");
             return true;

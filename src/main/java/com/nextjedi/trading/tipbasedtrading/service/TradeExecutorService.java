@@ -8,13 +8,11 @@ import com.nextjedi.trading.tipbasedtrading.service.connecttoexchange.ZerodhaCon
 import com.nextjedi.trading.tipbasedtrading.util.Helper;
 import com.nextjedi.trading.tipbasedtrading.util.OrderParamUtil;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
-import com.zerodhatech.kiteconnect.utils.Constants;
 import com.zerodhatech.models.Order;
 import com.zerodhatech.models.OrderParams;
 import com.zerodhatech.models.Tick;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,10 +25,14 @@ import static com.zerodhatech.kiteconnect.utils.Constants.*;
 @Service
 @Slf4j
 public class TradeExecutorService {
-    @Autowired
-    private TradeModelService tradeModelService;
-    @Autowired
-    private ZerodhaConnectService zerodhaConnectService;
+    private final TradeModelService tradeModelService;
+    private final ZerodhaConnectService zerodhaConnectService;
+
+    public TradeExecutorService(TradeModelService tradeModelService, ZerodhaConnectService zerodhaConnectService) {
+        this.tradeModelService = tradeModelService;
+        this.zerodhaConnectService = zerodhaConnectService;
+    }
+
     public void handleOrderUpdate(Order order) {
         log.info("handle Order Update {}",order.toString());
         log.info(order.status);
@@ -47,7 +49,7 @@ public class TradeExecutorService {
                         log.error(order.statusMessage);
                     }else {
                         log.error("sell order rejected");
-                        handleSellOrderRejected(order);
+                        handleSellOrderRejected();
                     }
                 }
                 case ORDER_CANCELLED -> {
@@ -62,57 +64,54 @@ public class TradeExecutorService {
         }
     }
 
-    private void handleSellOrderRejected(Order order) {
+    private void handleSellOrderRejected() {
 //        todo fetch the trade
 //        todo check for open position
 //        todo update status
         
     }
     private void handleOrderCompleted(Order order){
-        switch (order.transactionType){
-            case TRANSACTION_TYPE_BUY -> {
-                var tradeModelOptional = tradeModelService.getOrderByEntryOrder(Integer.parseInt(order.orderId));
-                if(tradeModelOptional.isPresent()){
-                    log.info("buy order completed");
-                    var trade = tradeModelOptional.get();
-                    if(trade.getType().equals(TradeType.BTST)){
-                        trade.setTradeStatus(TradeStatus.COMPLETED);
-                        tradeModelService.updateTrade(trade);
-                        return;
-                    }else{
-                        trade.setTradeStatus(TradeStatus.ENTERED);
-                    }
-                    var instr = trade.getInstrument();
+        if (order.transactionType.equals(TRANSACTION_TYPE_BUY)) {
+            var tradeModelOptional = tradeModelService.getOrderByEntryOrder(Integer.parseInt(order.orderId));
+            if (tradeModelOptional.isPresent()) {
+                log.info("buy order completed");
+                var trade = tradeModelOptional.get();
+                if (trade.getType().equals(TradeType.BTST)) {
+                    trade.setTradeStatus(TradeStatus.COMPLETED);
                     tradeModelService.updateTrade(trade);
-                    double price = Double.parseDouble(order.averagePrice)*0.85;
-                    double trigger = Double.parseDouble(order.averagePrice)*0.87;
-                    price = Helper.tickMultiple(price, instr.tick_size);
-                    trigger =Helper.tickMultiple(trigger, instr.tick_size);
-                    var orderParam = OrderParamUtil.createSellOrder(
-                            trade.getInstrument(),price,trigger,trade.getInstrument().getLot_size(),TAG,trade.getType());
-                    log.info("order param {}", orderParam);
-                    try {
-                        var kite = zerodhaConnectService.getKiteConnect();
-                        var orderRes = kite.placeOrder(orderParam,VARIETY_REGULAR);
-                        trade.setExitOrder(new OrderDetail(orderRes));
-                        tradeModelService.updateTrade(trade);
-                    } catch (KiteException | IOException e) {
-                        log.error("something went wrong {}",e.getMessage());
-                        throw new RuntimeException(e);
-                    }
-                }else {
-                    log.error("no trade found for this order");
+                    return;
+                } else {
+                    trade.setTradeStatus(TradeStatus.ENTERED);
                 }
+                var instr = trade.getInstrument();
+                tradeModelService.updateTrade(trade);
+                double price = Double.parseDouble(order.averagePrice) * 0.85;
+                double trigger = Double.parseDouble(order.averagePrice) * 0.87;
+                price = Helper.tickMultiple(price, instr.tick_size);
+                trigger = Helper.tickMultiple(trigger, instr.tick_size);
+                var orderParam = OrderParamUtil.createSellOrder(
+                        trade.getInstrument(), price, trigger, trade.getInstrument().getLot_size(), TAG, trade.getType());
+                log.info("order param {}", orderParam);
+                try {
+                    var kite = zerodhaConnectService.getKiteConnect();
+                    var orderRes = kite.placeOrder(orderParam, VARIETY_REGULAR);
+                    trade.setExitOrder(new OrderDetail(orderRes));
+                    tradeModelService.updateTrade(trade);
+                } catch (KiteException | IOException e) {
+                    log.error("something went wrong {}", e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            } else {
+                log.error("no trade found for this order");
             }
-            case TRANSACTION_TYPE_SELL -> {
-                var trade = tradeModelService.getOrderByExitOrder(Integer.parseInt(order.orderId));
-                if(trade.isPresent()){
-                    log.info("sell order completed");
-                    trade.get().setTradeStatus(TradeStatus.COMPLETED);
-                    tradeModelService.updateTrade(trade.get());
-                }else {
-                    log.error("no trade found for this order");
-                }
+        } else if (order.transactionType.equals(TRANSACTION_TYPE_SELL)) {
+            var trade = tradeModelService.getOrderByExitOrder(Integer.parseInt(order.orderId));
+            if (trade.isPresent()) {
+                log.info("sell order completed");
+                trade.get().setTradeStatus(TradeStatus.COMPLETED);
+                tradeModelService.updateTrade(trade.get());
+            } else {
+                log.error("no trade found for this order");
             }
         }
     }
@@ -139,6 +138,12 @@ public class TradeExecutorService {
             case COMPLETED -> {
                 log.info("order is completed, unsubscribe");
 //                todo unsubscribe and check for any related open order or position
+            }
+            case MISSED -> {
+            }
+            case ABORTED -> {
+            }
+            case BUSY -> {
             }
             default -> log.info("weird status");
         }

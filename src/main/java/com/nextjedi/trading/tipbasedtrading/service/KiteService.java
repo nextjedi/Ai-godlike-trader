@@ -68,14 +68,12 @@ public class KiteService {
             tradeExecutorService.handleOrderUpdate(order);
         });
 
-        kiteTicker.setOnDisconnectedListener(() -> {
-            log.info("disconnected");
-        });
+        kiteTicker.setOnDisconnectedListener(() -> log.info("disconnected"));
         kiteTicker.setOnTickerArrivalListener(ticks -> {
             log.info("ticks size {}", ticks.size());
             if(!ticks.isEmpty()) {
                 log.info("tick is not empty");
-                ticks.forEach(tick -> tradeExecutorService.onTickHandler(tick));
+                ticks.forEach(tradeExecutorService::onTickHandler);
             }
         });
         if(!kiteTicker.isConnectionOpen()){

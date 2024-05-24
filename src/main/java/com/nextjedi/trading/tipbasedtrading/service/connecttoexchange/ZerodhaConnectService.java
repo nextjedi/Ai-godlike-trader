@@ -18,11 +18,15 @@ import static com.nextjedi.trading.tipbasedtrading.util.Constants.USER_ID;
 @Service
 @Slf4j
 public class ZerodhaConnectService {
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
     private KiteTicker kiteTicker;
     private KiteConnect kiteConnect;
+
+    public ZerodhaConnectService(TokenService tokenService) {
+        this.tokenService = tokenService;
+    }
+
     public void connectToKite(){
         log.info("inside connect to kite method");
         var secret = ApiSecret.apiKeys.get(USER_ID);

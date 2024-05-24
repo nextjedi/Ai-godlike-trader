@@ -16,8 +16,12 @@ import java.io.IOException;
 @RequestMapping("/tip")
 @Slf4j
 public class TipController {
-    @Autowired
+    final
     TipBasedTradingService tipBasedTradingService;
+
+    public TipController(TipBasedTradingService tipBasedTradingService) {
+        this.tipBasedTradingService = tipBasedTradingService;
+    }
 
     @PostMapping
     public void trade(@RequestBody TipModelRequest tipModelRequest){
@@ -25,10 +29,10 @@ public class TipController {
             log.info("tip controller");
             tipBasedTradingService.trade(tipModelRequest);
         } catch (IOException e) {
-            log.error("IO exception"+e.getMessage());
+            log.error("IO exception{}", e.getMessage());
             throw new RuntimeException(e);
         } catch (KiteException e) {
-            log.error("Kite exception "+e.getMessage());
+            log.error("Kite exception {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }

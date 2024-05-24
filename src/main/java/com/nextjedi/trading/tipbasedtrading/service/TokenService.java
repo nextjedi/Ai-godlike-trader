@@ -20,10 +20,13 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class TokenService {
-    @Autowired
-    private TokenRepository tokenRepository;
-    @Autowired
-    private PlayWrightAutomationService playWrightAutomationService;
+    private final TokenRepository tokenRepository;
+    private final PlayWrightAutomationService playWrightAutomationService;
+
+    public TokenService(TokenRepository tokenRepository, PlayWrightAutomationService playWrightAutomationService) {
+        this.tokenRepository = tokenRepository;
+        this.playWrightAutomationService = playWrightAutomationService;
+    }
 
     public TokenAccess insert(String userId){
         log.info("inside insert token service method");
