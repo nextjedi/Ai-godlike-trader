@@ -7,7 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +27,9 @@ public class TradeModelService {
     }
     public List<TradeModel> getAllActiveTrades(){
 //        todo not in multiple statuses
-        return tradeModelRepository.findByTradeStatusNot(TradeStatus.COMPLETED);
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(2, ChronoUnit.DAYS);
+        return tradeModelRepository.findByCreatedAtAfterAndTradeStatusNot(Date.from(yesterday),TradeStatus.COMPLETED);
     }
     public ArrayList<Long> getAllTokens(){
         var trades = getAllActiveTrades();
@@ -37,11 +42,11 @@ public class TradeModelService {
     }
     public Optional<TradeModel> getOrderByEntryOrder(int entryOrder){
         log.info("getOrderByEntryOrder service method");
-        return tradeModelRepository.findTopByEntryOrder_OrderId(entryOrder);
+        return tradeModelRepository.findTopByEntryOrder_OrderId(String.valueOf(entryOrder));
     }
     public Optional<TradeModel> getOrderByExitOrder(int exitOrder){
         log.info("getOrderByExitOrder service method");
-        return tradeModelRepository.findTopByExitOrder_OrderId(exitOrder);
+        return tradeModelRepository.findTopByExitOrder_OrderId(String.valueOf(exitOrder));
     }
 
     public void updateTrade(TradeModel tradeModel){

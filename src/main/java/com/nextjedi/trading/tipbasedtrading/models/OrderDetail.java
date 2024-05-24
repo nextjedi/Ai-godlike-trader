@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 public class OrderDetail {
-    int orderId;
+    String orderId;
     int quantity;
     double price;
     String transactionType;
@@ -18,10 +18,6 @@ public class OrderDetail {
     @Id
     private Long id;
     public OrderDetail(Order order) {
-        this.orderId = Integer.parseInt(order.orderId);
-        this.quantity = Integer.parseInt(order.quantity);
-        this.price = Double.parseDouble(order.price);
-        this.transactionType = order.transactionType;
-        this.product = order.product;
+        this.orderId = order.orderId;
     }
 }

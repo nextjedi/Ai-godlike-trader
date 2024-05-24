@@ -123,7 +123,7 @@ public class TradeExecutorService {
         var trade =tradeModelService.getOrderByInstrumentToken(tick.getInstrumentToken());
         if(Objects.isNull(trade)){
             log.warn("no relevant order for current tick {}",tick.getInstrumentToken());
-//            todo handle unsubscribe
+//            handle unsubscribe
             return;
         }
         log.info("trading symbol {}, strike price {}, {}",trade.getInstrument().tradingSymbol,trade.getInstrument().getStrike(),trade.getInstrument().getInstrumentType());
@@ -136,10 +136,9 @@ public class TradeExecutorService {
                 log.info("order already placed, trailing");
                 modifyTrade(trade,tick);
             }
-            case COMPLETED -> {
-                log.info("order is completed, unsubscribe");
+            case COMPLETED ->
 //                todo unsubscribe and check for any related open order or position
-            }
+                    log.info("order is completed, unsubscribe");
             default -> log.info("weird status");
         }
     }
@@ -152,8 +151,8 @@ public class TradeExecutorService {
         try {
             var kite = zerodhaConnectService.getKiteConnect();
             var margin = kite.getMargins(MARGIN_EQUITY);
-            var bal = Math.min(Double.parseDouble(margin.available.cash),MAXIMUM_VALUE_PER_TRADE);
-            var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,TRANSACTION_TYPE_BUY,tradeModel.getTag(),tradeModel.getType());
+            var bal = Math.min(Double.parseDouble(margin.available.intradayPayin),MAXIMUM_VALUE_PER_TRADE);
+            var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,tradeModel.getTag(),tradeModel.getTradeType());
             if(Objects.isNull(orderParam)){
                 log.error("order param is null, not enough balance");
                 return;
@@ -182,7 +181,7 @@ public class TradeExecutorService {
                 double trigger = tick.getLastTradedPrice() -(movement*0.4);
                 price =Helper.tickMultiple(price,instr.tick_size);
                 trigger =Helper.tickMultiple(trigger,instr.tick_size);
-                OrderParams orderP = OrderParamUtil.createSellOrder(instr, price, trigger, order.getQuantity(),tradeModel.getTag(),tradeModel.getType());
+                OrderParams orderP = OrderParamUtil.createSellOrder(instr, price, trigger, order.getQuantity(),tradeModel.getTag(),tradeModel.getTradeType());
                 log.info("modifying order to  {}",orderP.price);
                 var sellOrder =kite.modifyOrder(String.valueOf(order.getOrderId()),orderP, VARIETY_REGULAR);
                 tradeModel.setExitOrder(new OrderDetail(sellOrder));

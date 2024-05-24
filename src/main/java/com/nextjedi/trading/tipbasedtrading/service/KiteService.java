@@ -17,16 +17,20 @@ import java.util.ArrayList;
 @EnableAsync
 public class KiteService {
 
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private TradeExecutorService tradeExecutorService;
-    @Autowired
-    private TradeModelService tradeModelService;
-    @Autowired
-    private InstrumentService instrumentService;
-    @Autowired
-    private ZerodhaConnectService zerodhaConnectService;
+    private final TokenService tokenService;
+    private final TradeExecutorService tradeExecutorService;
+    private final TradeModelService tradeModelService;
+    private final InstrumentService instrumentService;
+    private final ZerodhaConnectService zerodhaConnectService;
+
+    public KiteService(TokenService tokenService, TradeExecutorService tradeExecutorService, TradeModelService tradeModelService, InstrumentService instrumentService, ZerodhaConnectService zerodhaConnectService) {
+        this.tokenService = tokenService;
+        this.tradeExecutorService = tradeExecutorService;
+        this.tradeModelService = tradeModelService;
+        this.instrumentService = instrumentService;
+        this.zerodhaConnectService = zerodhaConnectService;
+    }
+
     public void subscribe(Long token){
         log.info("subscribe to {}",token);
         var kiteTicker = zerodhaConnectService.getKiteTicker();

@@ -11,7 +11,7 @@ public class ExceptionDefault {
     public ResponseEntity<Object> handleAll(java.lang.Exception ex, WebRequest request) {
         ApiError apiError = new ApiError(
                 HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage(), "error occurred");
-        return new ResponseEntity<Object>(
+        return new ResponseEntity<>(
                 apiError, new HttpHeaders(), apiError.getStatus());
     }
 }
