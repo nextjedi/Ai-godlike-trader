@@ -9,9 +9,6 @@ import java.util.List;
 
 public interface InstrumentRepository extends JpaRepository<InstrumentWrapper,Long> {
 
-    public InstrumentWrapper findByTradingSymbol(String tradingSymbol);
-    public InstrumentWrapper findByStrikeAndNameAndInstrumentTypeAndSegmentAndExpiry(int strike, String name,String instrumentType,String Segment, Date expiry);
-    public List<InstrumentWrapper> findByStrikeAndNameAndInstrumentTypeAndSegment(int strike, String name,String instrumentType, String Segment);
-    public InstrumentWrapper findTopByStrikeAndNameAndInstrumentTypeAndSegment(
-            int strike, String name, String instrumentType, String segment, Sort sort);
+    public List<InstrumentWrapper> findByStrikeAndNameAndInstrumentTypeAndSegment(int strike, String name,String instrumentType, String segment);
+    public InstrumentWrapper findTopByStrikeAndNameAndInstrumentTypeAndSegment(int strike, String name, String instrumentType, String segment, Sort sort);
 }

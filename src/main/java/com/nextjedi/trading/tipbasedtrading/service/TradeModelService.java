@@ -1,0 +1,59 @@
+package com.nextjedi.trading.tipbasedtrading.service;
+
+import com.nextjedi.trading.tipbasedtrading.dao.TradeModelRepository;
+import com.nextjedi.trading.tipbasedtrading.models.TradeModel;
+import com.nextjedi.trading.tipbasedtrading.models.TradeStatus;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Slf4j
+public class TradeModelService {
+    private final TradeModelRepository tradeModelRepository;
+
+    public TradeModelService(TradeModelRepository tradeModelRepository) {
+        this.tradeModelRepository = tradeModelRepository;
+    }
+
+    public boolean registerNewTrade(TradeModel tradeModel){
+//        todo check if trade already exists
+        log.info("registerNewTrade service method");
+        tradeModelRepository.save(tradeModel);
+        return true;
+    }
+    public List<TradeModel> getAllActiveTrades(){
+//        todo not in multiple statuses
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(2, ChronoUnit.DAYS);
+        return tradeModelRepository.findByCreatedAtAfterAndTradeStatusNot(Date.from(yesterday),TradeStatus.COMPLETED);
+    }
+    public ArrayList<Long> getAllTokens(){
+        var trades = getAllActiveTrades();
+        var tokens = trades.stream().map(tradeModel -> tradeModel.getInstrument().getInstrumentToken()).distinct().toList();
+        return new ArrayList<>(tokens);
+    }
+    public TradeModel getOrderByInstrumentToken(Long token){
+        var res =tradeModelRepository.findTopByInstrument_InstrumentTokenAndTradeStatusNot(token,TradeStatus.COMPLETED);
+        return res.orElseGet(null);
+    }
+    public Optional<TradeModel> getOrderByEntryOrder(int entryOrder){
+        log.info("getOrderByEntryOrder service method");
+        return tradeModelRepository.findTopByEntryOrder_OrderId(String.valueOf(entryOrder));
+    }
+    public Optional<TradeModel> getOrderByExitOrder(int exitOrder){
+        log.info("getOrderByExitOrder service method");
+        return tradeModelRepository.findTopByExitOrder_OrderId(String.valueOf(exitOrder));
+    }
+
+    public void updateTrade(TradeModel tradeModel){
+        tradeModelRepository.save(tradeModel);
+    }
+}

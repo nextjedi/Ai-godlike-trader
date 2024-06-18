@@ -2,10 +2,8 @@ package com.nextjedi.trading.tipbasedtrading.service;
 
 import com.nextjedi.trading.tipbasedtrading.exception.TokenNotFoundException;
 import com.nextjedi.trading.tipbasedtrading.dao.TokenRepository;
-import com.nextjedi.trading.tipbasedtrading.models.ApiSecret;
-import com.nextjedi.trading.tipbasedtrading.models.Constants;
+import com.nextjedi.trading.tipbasedtrading.util.ApiSecret;
 import com.nextjedi.trading.tipbasedtrading.models.TokenAccess;
-import com.nextjedi.trading.tipbasedtrading.models.TokenDTO;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.models.User;
@@ -22,10 +20,13 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class TokenService {
-    @Autowired
-    private TokenRepository tokenRepository;
-    @Autowired
-    private PlayWrightAutomationService playWrightAutomationService;
+    private final TokenRepository tokenRepository;
+    private final PlayWrightAutomationService playWrightAutomationService;
+
+    public TokenService(TokenRepository tokenRepository, PlayWrightAutomationService playWrightAutomationService) {
+        this.tokenRepository = tokenRepository;
+        this.playWrightAutomationService = playWrightAutomationService;
+    }
 
     public TokenAccess insert(String userId){
         log.info("inside insert token service method");
@@ -61,7 +62,7 @@ public class TokenService {
         return getLatestTokenByUserId(userId,false);
     }
     public TokenAccess getLatestTokenByUserId(String userId,boolean forceRefresh){
-        log.info("inside get token service method");
+        log.info("inside getLatestTokenByUserId service method");
         try {
             if(forceRefresh){
                 log.info("Refresh the token without checking");

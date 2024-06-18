@@ -5,12 +5,11 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Secret {
+public class SecretModel {
 
     private String apiKey;
     private String apiSecret;
     private String password;
-
     private String totpKey;
 
 }

@@ -14,8 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/instruments")
 @Slf4j
 public class InstrumentController {
-    @Autowired
+    final
     InstrumentService instrumentService;
+
+    public InstrumentController(InstrumentService instrumentService) {
+        this.instrumentService = instrumentService;
+    }
 
     @PostMapping
     public boolean insertInstruments(){

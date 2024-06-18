@@ -8,7 +8,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
 import java.util.regex.Pattern;
@@ -20,10 +19,8 @@ public class PlayWrightAutomationService {
                                String password,String totpKey){
         TOTPSecret totpSecret = TOTPSecret.Companion.fromBase32EncodedString(totpKey);
         TOTPGenerator totpGenerator = new TOTPGenerator();
-        var totp = totpGenerator.generateCurrent(totpSecret);
         try (Playwright playwright = Playwright.create()) {
-            var options = new BrowserType.LaunchOptions();
-            Browser browser = playwright.chromium().launch();
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
             Page page = browser.newPage();
             page.navigate("https://kite.trade/connect/login?api_key="+apiKey+"&v=3");
             page.locator("#userid").fill(userId);
@@ -32,6 +29,7 @@ public class PlayWrightAutomationService {
 //            todo more logical time out
             page.waitForTimeout(1000);
 //            todo improve locator
+            var totp = totpGenerator.generateCurrent(totpSecret);
             page.locator("xpath=//*[@id=\"userid\"]").fill(totp.getValue());
             page.waitForURL(Pattern.compile(".*token"));
             log.info(page.url());
