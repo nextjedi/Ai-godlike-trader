@@ -49,7 +49,7 @@ public class KiteService {
         tokens.add(token);
         kiteTicker.unsubscribe(tokens);
     }
-//    @Scheduled(cron = "0 45 8 * * MON-FRI")
+    @Scheduled(cron = "0 45 8 * * MON-FRI")
     @PostConstruct
     private void startConnection(){
         log.info("into the connection setup method");

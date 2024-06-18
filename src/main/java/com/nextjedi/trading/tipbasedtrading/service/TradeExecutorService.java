@@ -12,7 +12,6 @@ import com.zerodhatech.models.Order;
 import com.zerodhatech.models.OrderParams;
 import com.zerodhatech.models.Tick;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -133,11 +132,10 @@ public class TradeExecutorService {
             }
             case ENTERED -> {
                 log.info("order already placed, trailing");
-                modifyTrade(trade,tick);
+//                modifyTrade(trade,tick);
             }
             case COMPLETED -> {
                 log.info("order is completed, unsubscribe");
-//                todo unsubscribe and check for any related open order or position
             }
             case MISSED -> {
             }
@@ -150,10 +148,18 @@ public class TradeExecutorService {
     }
     public void enterTrade(TradeModel tradeModel,Tick tick){
 //        todo logic to be improved
-        if(tick.getLastTradedPrice()<tradeModel.getTriggerPrice()*0.95){
-            log.info("still less than trigger price: {} :: {}",tradeModel.getTriggerPrice(),tick.getLastTradedPrice());
-            return;
+        if(tradeModel.getTradeType().equals(TradeType.BTST)){
+            buyBTST(tradeModel,tick);
+        }else {
+            if(tick.getLastTradedPrice() < tradeModel.getTriggerPrice()* 1.05){
+                log.info("still less than trigger price: {} :: {}",tradeModel.getTriggerPrice(),tick.getLastTradedPrice());
+            }else {
+                buyIntraDay(tradeModel,tick);
+            }
         }
+
+    }
+    private void buyIntraDay(TradeModel tradeModel, Tick tick){
         try {
             var kite = zerodhaConnectService.getKiteConnect();
             var margin = kite.getMargins(MARGIN_EQUITY);
@@ -172,6 +178,27 @@ public class TradeExecutorService {
             throw new RuntimeException(e);
         }
     }
+
+    private void buyBTST(TradeModel tradeModel,Tick tick){
+        try {
+            var kite = zerodhaConnectService.getKiteConnect();
+            var margin = kite.getMargins(MARGIN_EQUITY);
+            var bal = Math.min(Double.parseDouble(margin.available.cash),MAXIMUM_VALUE_PER_TRADE);
+            var orderParam =OrderParamUtil.createBuyOrder(tradeModel.getInstrument(),tick.getLastTradedPrice(),bal,TRANSACTION_TYPE_BUY,tradeModel.getTag(),tradeModel.getType());
+            if(Objects.isNull(orderParam)){
+                log.error("order param is null, not enough balance");
+                return;
+            }
+            var order =kite.placeOrder(orderParam,VARIETY_REGULAR);
+            tradeModel.setTradeStatus(TradeStatus.BUSY);
+            tradeModel.setEntryOrder(new OrderDetail(order));
+            tradeModelService.updateTrade(tradeModel);
+        } catch (KiteException | IOException e) {
+            log.error("something went wrong {}",e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void modifyTrade(TradeModel tradeModel,Tick tick){
         log.info("modifyTrade");
