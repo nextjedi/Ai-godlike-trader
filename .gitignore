@@ -31,3 +31,37 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables (NEVER COMMIT)
+.env
+.env.local
+.env.*.local
+
+### API Keys and Secrets
+**/ApiSecret.java
+secrets/
+credentials/
+
+### Logs
+logs/
+*.log
+
+### Database
+*.db
+*.h2.db
+*.mv.db
+*.trace.db
+
+### Reports
+reports/
+*.pdf
+
+### Redis dumps
+dump.rdb
+
+### Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
