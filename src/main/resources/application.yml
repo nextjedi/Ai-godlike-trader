@@ -1,0 +1,157 @@
+# Trading System Configuration
+# Use environment variables or external configuration for production
+
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: ai-godlike-trader
+
+  # Database Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:~/trading_db;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE}
+    username: ${DATABASE_USERNAME:admin}
+    password: ${DATABASE_PASSWORD:password}
+    driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:60000}
+
+  # Kafka Configuration (optional)
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:trading-consumers}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  # Email Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.nextjedi.trading: ${LOG_LEVEL:DEBUG}
+  file:
+    path: ${LOG_FILE_PATH:logs}
+    name: ${LOG_FILE_PATH:logs}/trading.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Trading System Configuration
+trading:
+  # Portfolio Configuration
+  portfolio:
+    total-capital: ${PORTFOLIO_CAPITAL:1000000}
+    default-max-position-size: ${MAX_POSITION_SIZE:15000}
+    default-max-drawdown-percent: ${MAX_DRAWDOWN_PERCENT:10}
+    default-max-exposure-percent: ${MAX_EXPOSURE_PERCENT:80}
+
+  # Broker Configuration
+  brokers:
+    zerodha:
+      enabled: ${ZERODHA_ENABLED:true}
+      user-id: ${ZERODHA_USER_ID:}
+      api-key: ${ZERODHA_API_KEY:}
+      api-secret: ${ZERODHA_API_SECRET:}
+      totp-key: ${ZERODHA_TOTP_KEY:}
+      password: ${ZERODHA_PASSWORD:}
+    upstox:
+      enabled: ${UPSTOX_ENABLED:false}
+      api-key: ${UPSTOX_API_KEY:}
+      api-secret: ${UPSTOX_API_SECRET:}
+
+  # Tick Data Configuration
+  tick-data:
+    enabled: ${TICK_DATA_ENABLED:true}
+    provider: ${TICK_DATA_PROVIDER:redis} # redis or kafka
+    redis:
+      stream-key: ${TICK_STREAM_KEY:trading:ticks}
+      consumer-group: ${TICK_CONSUMER_GROUP:tick-processors}
+    kafka:
+      topic: ${TICK_KAFKA_TOPIC:trading-ticks}
+      partitions: ${TICK_KAFKA_PARTITIONS:3}
+      replication-factor: ${TICK_KAFKA_REPLICATION:1}
+
+  # Reporting Configuration
+  reporting:
+    enabled: ${REPORTING_ENABLED:true}
+    output-directory: ${REPORT_DIR:./reports}
+
+    # Email Configuration for Reports
+    email:
+      enabled: ${REPORT_EMAIL_ENABLED:false}
+      from: ${REPORT_EMAIL_FROM:trading@example.com}
+      recipients: ${REPORT_EMAIL_TO:admin@example.com}
+
+    # Report Schedules (Cron expressions)
+    schedule:
+      daily: ${REPORT_SCHEDULE_DAILY:0 30 15 * * MON-FRI}    # 3:30 PM weekdays
+      weekly: ${REPORT_SCHEDULE_WEEKLY:0 0 10 * * SAT}       # 10:00 AM Saturday
+      monthly: ${REPORT_SCHEDULE_MONTHLY:0 0 10 1 * *}       # 10:00 AM 1st of month
+
+  # Trading Schedule
+  schedule:
+    market-start: ${MARKET_START_TIME:0 45 8 * * MON-FRI}   # 8:45 AM weekdays
+    market-end: ${MARKET_END_TIME:0 16 16 * * MON-FRI}      # 4:16 PM weekdays
+
+  # Strategy Configuration
+  strategies:
+    tip-based:
+      enabled: ${STRATEGY_TIP_BASED_ENABLED:true}
+      max-position-size: ${STRATEGY_TIP_BASED_MAX_POSITION:15000}
+      entry-threshold-percent: ${STRATEGY_TIP_BASED_ENTRY_THRESHOLD:5}
+      stop-loss-percent: ${STRATEGY_TIP_BASED_STOP_LOSS:15}
+      trailing-stop-percent: ${STRATEGY_TIP_BASED_TRAILING_STOP:4}
+
+# Actuator Configuration for Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: ${PROMETHEUS_ENABLED:false}
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

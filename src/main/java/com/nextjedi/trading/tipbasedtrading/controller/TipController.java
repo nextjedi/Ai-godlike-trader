@@ -3,6 +3,7 @@ package com.nextjedi.trading.tipbasedtrading.controller;
 import com.nextjedi.trading.tipbasedtrading.models.TipModelRequest;
 import com.nextjedi.trading.tipbasedtrading.service.TipBasedTradingService;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class TipController {
     }
 
     @PostMapping
-    public void trade(@RequestBody TipModelRequest tipModelRequest){
+    public void trade(@Valid @RequestBody TipModelRequest tipModelRequest){
         try {
             log.info("tip controller");
             tipBasedTradingService.trade(tipModelRequest);
