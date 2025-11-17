@@ -1,0 +1,15 @@
+target/
+.git
+.gitignore
+*.md
+.env
+.env.*
+logs/
+*.log
+.idea/
+*.iml
+.vscode/
+node_modules/
+reports/
+*.pdf
+pom.xml.backup
