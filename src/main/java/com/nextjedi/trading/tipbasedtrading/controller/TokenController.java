@@ -22,6 +22,11 @@ public class TokenController {
         this.tokenService = tokenService;
     }
 
+    @GetMapping("/ping")
+    public String ping(){
+        log.info("ping");
+        return "true";
+    }
     @GetMapping
     public List<TokenAccess> getTokens(){
         log.info("Into the get token controller");

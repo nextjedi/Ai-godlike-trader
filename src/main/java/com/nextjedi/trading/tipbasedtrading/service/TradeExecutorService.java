@@ -132,17 +132,12 @@ public class TradeExecutorService {
             }
             case ENTERED -> {
                 log.info("order already placed, trailing");
-//                modifyTrade(trade,tick);
+                modifyTrade(trade,tick);
             }
-            case COMPLETED -> {
-                log.info("order is completed, unsubscribe");
-            }
-            case MISSED -> {
-            }
-            case ABORTED -> {
-            }
-            case BUSY -> {
-            }
+            case COMPLETED -> log.info("order is completed, unsubscribe");
+
+            case MISSED, BUSY, ABORTED -> log.info("for future reference");
+
             default -> log.info("weird status");
         }
     }
